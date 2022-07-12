@@ -1,5 +1,5 @@
 #!/bin/bash
-### ATTENTION: Script has to be executed with source! Otherwise loading the environment does not work as intended ###
+### ATTENTION: Script has to be executed with source! Otherwise loading the environment does not work as intended -> Check: Really needed? ###
 
 folder=$(pwd)
 
@@ -27,5 +27,5 @@ else
 
   source $analysisFolder/env.sh
 
-  python3 $folder/runMTFAnalysis $analysisFolder $day
+  python3 $folder/runMTFAnalysis.py $analysisFolder $day
 fi
