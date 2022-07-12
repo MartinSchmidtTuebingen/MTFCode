@@ -18,16 +18,17 @@ elif [[ $1 = "create" ]];then
   echo "Create analysis $2"
   mkdir $analysisFolder
   cp $folder/env.sh $analysisFolder/env.sh.base
+  cp $folder/config.json.example $analysisFolder/config.json
   echo "Created. Rename env.sh.base in $analysisFolder to env.sh and adjust loading environment, if this analysis should run with another AliPhysics instance."
 else
   analysisName=$1
   analysisFolder=$folder/$analysisName
   
-#   day=$2
-#   if [[ $2 = "" ]];then
-#     day=$(date +%Y_%m_%d)
-#   fi
-#   echo "Process systematic from $day"
+  day=$2
+  if [[ $2 = "" ]];then
+    day=$(date +%Y_%m_%d)
+  fi
+  echo "Process systematic from $day"
 
   if [ -e $analysisFolder/env.sh ];then
     echo "Source analysis environment"
@@ -37,5 +38,5 @@ else
     source $folder/env.sh
   fi
 
-  python3 $folder/runMTFAnalysis.py $analysisFolder
+  python3 $folder/runMTFAnalysis.py $analysisFolder $day
 fi

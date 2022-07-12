@@ -1,0 +1,262 @@
+{
+    "config": {
+        "referenceShape": "PureGauss",
+        "doInclusive": 0,
+        "doJets": 1,
+        "doUE": 1,
+        "fileNamePattern": "maschmid_PID_%s_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+        "chargeString": "",
+        "charge": 0,
+        "nSigma": 0,
+        "pathMCsysErrors": "/home/martin/Documents/Promotion/Analyses/LHC13b2_efix_p1_EfficiencySystematics/MCSystematicsFiles",
+        "pathMCCorrectionFile": "/home/martin/Documents/Promotion/Analyses/LHC13b2_efix_p1_EfficiencySystematics/MCSystematicsFiles/corrections_LHC13b2_efix_p1.root",
+        "correctGeantFluka": "kFALSE",
+        "newGeantFluka": "kFALSE",
+        "scaleStrangeness": "kTRUE",
+        "applyMuonCorrection": "kTRUE",
+        "constCorrAboveThreshold": 0,
+        "rebinEffObs": 1,
+        "etaAbsCut": 0.9,
+        "eps_trigger": 1,
+        "sysErrTypeMC": 4,
+        "pathMCUEFile": "",
+        "efficiencyFileNamePattern": "maschmid_PID_{}_PureGauss_efficiency.root",
+        "MCRunName": "LHC13b2_efix_p1",
+        "systematicsInclusive": [
+            "wo_prePID",
+            "Shape",
+            "Eta",
+            "Sigma",
+            "Splines",
+            "Mult"
+        ],
+        "systematicsJets": [
+            "wo_prePID",
+            "Shape",
+            "Eta",
+            "Sigma",
+            "Splines",
+            "Mult"
+        ],
+        "systematicsUE": [
+            "UEMethod"
+        ],
+        "centralities": [
+            "0_100",
+            "60_100",
+            "0_10"
+        ],
+        "jetPts": [
+            "05_10",
+            "10_15",
+            "15_20",
+            "20_30"
+        ],
+        "modesInclusive": [
+            "Pt"
+        ],
+        "modesJets": [
+            "Pt",
+            "Z"
+        ],
+        "MCVariationsEff": [
+            "95",
+            "105"
+        ],
+        "MCVariationsRes": [
+            "80",
+            "120"
+        ],
+        "MCVariationsLowPt": [
+            "LowPtDepletion",
+            "LowPtEnhancement"
+        ],
+        "FS_Parameters_Electron_neg": [
+            "7",
+            "0.6",
+            "5",
+            "3.2",
+            "3",
+            "8",
+            "2"
+        ],
+        "FS_Parameters_Electron_pos": [
+            "7",
+            "0.6",
+            "5",
+            "3.2",
+            "3",
+            "8",
+            "2"
+        ],
+        "FS_Parameters_Muon_neg": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Muon_pos": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Pion_neg": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Pion_pos": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Kaon_neg": [
+            "3",
+            "0.4",
+            "3",
+            "1.2",
+            "5",
+            "6",
+            "4",
+            "15",
+            "2"
+        ],
+        "FS_Parameters_Kaon_pos": [
+            "3",
+            "0.4",
+            "3",
+            "1.2",
+            "5",
+            "6",
+            "4",
+            "15",
+            "2"
+        ],
+        "FS_Parameters_Proton_neg": [
+            "6",
+            "0.4",
+            "4",
+            "1.6",
+            "4",
+            "2.5",
+            "2",
+            "8",
+            "5",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Proton_pos": [
+            "6",
+            "0.4",
+            "4",
+            "1.6",
+            "4",
+            "2.5",
+            "2",
+            "8",
+            "5",
+            "12",
+            "2"
+        ],
+        "centString": "0;100;60;100;0;10",
+        "jetPtString": "05;10;10;15;15;20;20;30",
+        "modesInclusiveString": "Pt",
+        "modesJetsString": "Pt;Z"
+    },
+    "systematics": {
+        "wo_prePID": {
+            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_PrePID_%s%s",
+            "refHistTitle": "PID combined (default)",
+            "inputPath": "Data/Systematics/wo_prePID",
+            "inputFilePattern_1": "maschmid_PID_%s_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons%s%s.root",
+            "histTitle_1": "No PID",
+            "inputFilePattern_2": "",
+            "histTitle_2": ""
+        },
+        "Shape": {
+            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Shape_%s%s",
+            "refHistTitle": "Pure Gauss (default)",
+            "inputPath": "Data/Systematics/Shape",
+            "inputFilePattern_1": "maschmid_PID_%s_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_1": "Asymmetric shape",
+            "inputFilePattern_2": "",
+            "histTitle_2": ""
+        },
+        "Eta": {
+            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Eta_%s%s",
+            "refHistTitle": "Standard #eta map",
+            "inputPath": "Data/Systematics/Eta",
+            "inputFilePattern_1": "maschmid_PID_%s_PureGauss_SystematicsEtaDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_1": "#eta correction - 1.5%, p > 0.45 GeV/c; - %3, p < 0.45 GeV/c",
+            "inputFilePattern_2": "maschmid_PID_%s_PureGauss_SystematicsEtaUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_2": "#eta correction + 1.5%, p > 0.45 GeV/c; + %3, p < 0.45 GeV/c"
+        },
+        "Sigma": {
+            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Sigma_%s%s",
+            "refHistTitle": "Standard #sigma map",
+            "inputPath": "Data/Systematics/Sigma",
+            "inputFilePattern_1": "maschmid_PID_%s_PureGauss_SystematicsSigmaDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_1": "#sigma correction - 3%",
+            "inputFilePattern_2": "maschmid_PID_%s_PureGauss_SystematicsSigmaUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_2": "#sigma correction + 3%"
+        },
+        "Splines": {
+            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Splines_%s%s",
+            "refHistTitle": "Standard splines",
+            "inputPath": "Data/Systematics/Splines",
+            "inputFilePattern_1": "maschmid_PID_%s_PureGauss_SystematicsSplinesDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_1": "Splines -0.6% - -1.4% for #beta#gamma > 50; -0.3% for #beta#gamma < 50%",
+            "inputFilePattern_2": "maschmid_PID_%s_PureGauss_SystematicsSplinesUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_2": "Splines +0.8% - +2% for #beta#gamma > 50; +0.3% for #beta#gamma < 50%"
+        },
+        "Mult": {
+            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Mult_%s%s",
+            "refHistTitle": "Standard Multiplicity correction",
+            "inputPath": "Data/Systematics/Mult",
+            "inputFilePattern_1": "maschmid_PID_%s_PureGauss_SystematicsMultDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_1": "Splines + 0.2%",
+            "inputFilePattern_2": "maschmid_PID_%s_PureGauss_SystematicsMultUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_2": "Splines – 0.2%"
+        },
+        "UEMethod": {
+            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_UEMethod_%s%s",
+            "refHistTitle": "Perpendicular Cone (Default)",
+            "inputPath": "Data/Systematics/UEMethod",
+            "inputFilePattern_1": "maschmid_PID_%s_RC_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+            "histTitle_1": "Random Cone",
+            "inputFilePattern_2": "",
+            "histTitle_2": ""
+        }
+    }
+}
