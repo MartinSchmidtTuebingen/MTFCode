@@ -6,7 +6,17 @@ import json
 import subprocess
 from shlex import split
 
+config = {}
+systematics = {}
+
+def downloadData(remotePattern, targetpath):
+    os.makedirs(targetpath, exist_ok = True)
+    downloadCommand = "rsync -a --ignore-existing " + remotePattern + " " + targetpath + " --progress"
+    subprocess.call(split(downloadCommand))
+
 def main():
+    global config
+    global systematics
     if len(sys.argv) < 2:
         print('Provide name of analysis folder')
         exit()
@@ -18,14 +28,21 @@ def main():
     print("Day for systematics:" + systematicDay)
   
     #### Load config file ###
-    config = {}
     with open(analysisFolder + "/config.json", "r") as configFile:
         config = json.loads(configFile.read())
         
     systematics = config["systematics"]
     config = config["config"]
-    print(config)
-  
+    config["analysisFolder"] = analysisFolder + "/"
+    
+    #### Download data ###
+    ### Reference data
+    downloadData(config["remoteBasePath"] + config["referenceRemotePath"] + "*results*reg1*idSpectra*.root", config["analysisFolder"] + 'Data')
+    
+    ### Systematics
+    for name,systematic in systematics.items():
+        downloadData(config["remoteBasePath"] + systematic["sourcePath"], config["analysisFolder"] + systematic["savePath"])
+    
     #subprocess.call(split("aliroot -l"))
 
 if __name__ == "__main__":
