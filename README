@@ -4,3 +4,6 @@ Usage:
 - Run "./runAnalysis.sh init" to initialise the MTF project
 - Run "./runAnalysis.sh create <PROJECT_NAME> to create a project folder (name should start with LHC to be hidden by gitignore)
 - Run "./runAnalysis.sh <PROJECT_NAME>" to run a specific analysis
+
+First step: Give remote paths for data in .json
+Run script to download data
