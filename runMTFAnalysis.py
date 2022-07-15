@@ -10,6 +10,8 @@ from helperFunctions import *
 
 foldersToCreate = ['SummedSystematics', 'SingleSystematicResults', 'UEsubtractedJetResults', 'Efficiencycorrected', 'Efficiencycorrected/PDF']
 folderEffCorrection = 'Efficiencycorrected'
+# Add tasks to default if they should be done in the analysis run
+defaultTasks='sys,eff,ue'
 
 config = {}
 systematics = {}
@@ -26,20 +28,34 @@ def main():
     parser = argparse.ArgumentParser(description='Script for MTF Analysis')
     
     parser.add_argument('-f','--folder', type=str, help='Analysis Folder', required=True)
-    parser.add_argument('-s','--systematic', type=str, help='Day of systematics',required=False)
-    parser.add_argument('-d','--download', type=int, help='Download data',required=False)
+    parser.add_argument('-s','--systematic', type=str, help='Day of systematics', required=False)
+    parser.add_argument('-d','--download', type=int, help='Download data', required=False, default=0)
+    parser.add_argument('-t','--tasks', type=str, help='Choose tasks to perform:Sys|Eff', required=False, default=defaultTasks) 
+    parser.add_argument('-c','--continueRun', type=int, help='Continue after task to perform', required=False, default=0)
     
     args = parser.parse_args()
-
+    print(args)
+    
     analysisFolder = args.folder
     systematicDay = args.systematic
-    download = False if args.download == 0 or args.download is None else True
+    download = False if args.download == 0 else True
   
     print("Folder:" + analysisFolder)
+    
+    if download:
+        print("Download data:")
+        
+    defaultTasksList = defaultTasks.split(',')
+    tasksToPerform = args.tasks.lower().split(',')
+    continueRun = False if args.continueRun == 0 else True 
+    print(defaultTasks.split(',').index(tasksToPerform[0]))
+    if len(tasksToPerform) == 1 and continueRun:
+        tasksToPerform = defaultTasksList[defaultTasksList.index(tasksToPerform[0]):]
+        
+    print(tasksToPerform)
+    
     if systematicDay != None:
       print("Day for systematics:" + systematicDay)
-    
-    print("Download data:" + str(download))
   
     #### Load config file ###
     with open(analysisFolder + "/config.json", "r") as configFile:
@@ -74,10 +90,10 @@ def main():
     for name,jetString in individualAnalyses.items():
         if config['do'+name] == 1:
             print('Do ' + name + ' analysis')
-            runSystematicProcess(config['systematics' + name], systematics, config, jetString, systematicDay) 
-            #runCalculateEfficiency(jetString, config, systematicDay, systematicDay)
-      
-    #subprocess.call(split("aliroot -l"))
+            if 'sys' in tasksToPerform:
+                runSystematicProcess(config['systematics' + name], systematics, config, jetString, systematicDay) 
+            if 'eff' in tasksToPerform:
+                runCalculateEfficiency(jetString, config, systematicDay, systematicDay)
 
 if __name__ == "__main__":
     main()

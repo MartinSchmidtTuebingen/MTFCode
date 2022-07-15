@@ -27,7 +27,6 @@ obsNameToNumber = {
 
 def callRootMacro(name, arguments):
   folder_for_macros=str(pathlib.Path().resolve()) + '/RootMacros/'
-  #folder_for_macros=str(pathlib.Path().resolve()) + '/'
   cmd = "aliroot '" + folder_for_macros + name + ".C+("
 
   argStrings = list(())
@@ -40,7 +39,6 @@ def callRootMacro(name, arguments):
     
   
   cmd += ", ".join(argStrings) + ")' -l -q -b" 
-  print(cmd)
 
   subprocess.call(split(cmd))
 

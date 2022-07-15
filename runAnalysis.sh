@@ -29,11 +29,17 @@ shift;
 
 download=0
 day=$(date +%Y_%m_%d)
+tasks=""
+continueParameter=""
+helpParameter=""
 
-while getopts "d:s:" option; do
+while getopts "hd:s:t:c:" option; do
   case $option in
+    h) helpParameter="-h";;
     d) download=$OPTARG;;
     s) day=$OPTARG;;
+    t) tasks="-t $OPTARG";;
+    c) continueParameter="-c $OPTARG"
   esac
 done
 
@@ -50,4 +56,4 @@ else
   source $folder/env.sh
 fi
   
-python3 $folder/runMTFAnalysis.py -f $analysisFolder -s $day
+python3 $folder/runMTFAnalysis.py -f $analysisFolder -s $day $tasks $continueParameter $helpParameter
