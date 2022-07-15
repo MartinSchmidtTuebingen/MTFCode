@@ -3,7 +3,183 @@ Code for the Multi-Template-Fit Projekt in ALICE.
 Usage:
 - Run "./runAnalysis.sh init" to initialise the MTF project
 - Run "./runAnalysis.sh create <PROJECT_NAME> to create a project folder (name should start with LHC to be hidden by gitignore)
+- Adjust config.json in analysis folder to your parameters (explanation further down)
 - Run "./runAnalysis.sh <PROJECT_NAME>" to run a specific analysis
 
-First step: Give remote paths for data in .json
-Run script to download data
+
+Explanation of config.json:
+{
+    "config": {
+        "remoteBasePath": Base Path where the output of all your MTF analysis is stored
+        "referenceRemotePath": Reference data, from remoteBasePath. Use directories or patterns (or combination)
+        "referenceShape": Shape of reference data (PureGauss/Asymmetric Shape)
+        "doInclusive": If inclusive analysis should run
+        "doJets": If jet analysis should run
+        "doUE": if UE analysis should run
+        "fileNamePattern": Pattern of reference data in sprintf format
+        "chargeString": charge string used ("","_neg", "_pos")
+        "charge": charge used
+        "nSigma": 
+        "pathMCsysErrors": path to MC systematic errors from fast simulation
+        "pathMCCorrectionFile": correction file to MC systematic error
+        "correctGeantFluka": Use geant fluka correction (depends on MC simulation)
+        "newGeantFluka": Use "new" geant fluka correction (ommitted if correctGeantFluka is false)
+        "scaleStrangeness": 
+        "applyMuonCorrection": 
+        "constCorrAboveThreshold": 
+        "rebinEffObs": 
+        "etaAbsCut": Cut for eta in efficiency analysis
+        "eps_trigger": 1,
+        "sysErrTypeMC": 4,
+        "pathMCUEFile": "",
+        "efficiencyFileNamePattern": File name pattern of efficiency file (python style)
+        "MCRunName": Run name of MC analysis
+        "systematicsInclusive": Systematics used for inclusive analysis
+        "systematicsJets": Systematics used for jet analysis
+        "systematicsUE": [
+            "UEMethod"
+        ],
+        "centralities": Used centralities string
+        "jetPts": Used jetPt string
+        "modesInclusive": modes for inclusive analysis
+        "modesJets": modes for jet analysis
+        "MCVariationsEff": variation of mc efficiency
+        "MCVariationsRes": variation of mc resolution
+        "MCVariationsLowPt": variations in mc lowPt production
+        "FS_Parameters_Electron_neg": [
+            "7",
+            "0.6",
+            "5",
+            "3.2",
+            "3",
+            "8",
+            "2"
+        ],
+        "FS_Parameters_Electron_pos": [
+            "7",
+            "0.6",
+            "5",
+            "3.2",
+            "3",
+            "8",
+            "2"
+        ],
+        "FS_Parameters_Muon_neg": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Muon_pos": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Pion_neg": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Pion_pos": [
+            "9",
+            "0.8",
+            "4",
+            "1.6",
+            "4",
+            "3",
+            "3",
+            "10",
+            "3",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Kaon_neg": [
+            "3",
+            "0.4",
+            "3",
+            "1.2",
+            "5",
+            "6",
+            "4",
+            "15",
+            "2"
+        ],
+        "FS_Parameters_Kaon_pos": [
+            "3",
+            "0.4",
+            "3",
+            "1.2",
+            "5",
+            "6",
+            "4",
+            "15",
+            "2"
+        ],
+        "FS_Parameters_Proton_neg": [
+            "6",
+            "0.4",
+            "4",
+            "1.6",
+            "4",
+            "2.5",
+            "2",
+            "8",
+            "5",
+            "12",
+            "2"
+        ],
+        "FS_Parameters_Proton_pos": [
+            "6",
+            "0.4",
+            "4",
+            "1.6",
+            "4",
+            "2.5",
+            "2",
+            "8",
+            "5",
+            "12",
+            "2"
+        ],
+        "centString": "0;100;60;100;0;10",
+        "jetPtString": "05;10;10;15;15;20;20;30",
+        "modesInclusiveString": "Pt",
+        "modesJetsString": "Pt;Z"
+    },
+    "systematics": {
+        "nameOfSystematic": {
+            "sourcePath": Remote source path with pattern
+            "savePath": Save path
+            "outputFilePattern": File pattern of output (printf-style)
+            "refHistTitle": Title of reference
+            "inputs": [
+              {"pattern":input file pattern (printf style), "histTitle":Title of histogram}
+            ]
+        }
+    }
+}
+
+
