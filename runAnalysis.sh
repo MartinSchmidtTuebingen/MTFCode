@@ -20,23 +20,34 @@ elif [[ $1 = "create" ]];then
   cp $folder/env.sh $analysisFolder/env.sh.base
   cp $folder/config.json.example $analysisFolder/config.json
   echo "Created. Rename env.sh.base in $analysisFolder to env.sh and adjust loading environment, if this analysis should run with another AliPhysics instance."
-else
-  analysisName=$1
-  analysisFolder=$folder/$analysisName
-  
-  day=$2
-  if [[ $2 = "" ]];then
-    day=$(date +%Y_%m_%d)
-  fi
-  echo "Process systematic from $day"
-
-  if [ -e $analysisFolder/env.sh ];then
-    echo "Source analysis environment"
-    source $analysisFolder/env.sh
-  else
-    echo "Source base environment"
-    source $folder/env.sh
-  fi
-
-  python3 $folder/runMTFAnalysis.py $analysisFolder $day
 fi
+  
+analysisName=$1
+analysisFolder=$folder/$analysisName
+
+shift;
+
+download=0
+day=$(date +%Y_%m_%d)
+
+while getopts "d:s:" option; do
+  case $option in
+    d) download=$OPTARG;;
+    s) day=$OPTARG;;
+  esac
+done
+
+if [[ $download != "0" ]];then
+  echo "Sync data"
+  python3 $folder/runMTFAnalysis.py -f $analysisFolder -d 1
+fi
+
+if [ -e $analysisFolder/env.sh ];then
+  echo "Source analysis environment"
+  source $analysisFolder/env.sh
+else
+  echo "Source base environment"
+  source $folder/env.sh
+fi
+  
+python3 $folder/runMTFAnalysis.py -f $analysisFolder -s $day
