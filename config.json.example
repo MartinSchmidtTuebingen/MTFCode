@@ -1,7 +1,7 @@
 {
     "config": {
-        "remoteBasePath":"gsiVirgo:///lustre/alice/users/maschmid/analysis/data/",
-        "referenceRemotePath":"2017_03_01_LHC13c.pass4_CorrectSplines_Reference/",
+        "remoteBasePath":"gsiVirgo:///lustre/alice/users/maschmid/analysis/data/,
+        "referenceRemotePath":"2017_03_01_LHC13c.pass4_CorrectSplines_Reference/*results*reg1*idSpectra*.root",
         "referenceShape": "PureGauss",
         "doInclusive": 0,
         "doJets": 1,

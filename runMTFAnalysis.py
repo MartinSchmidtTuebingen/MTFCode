@@ -47,7 +47,7 @@ def main():
     if download:
       #### Download data ###
       ### Reference data
-      downloadData(config["remoteBasePath"] + config["referenceRemotePath"] + "*results*reg1*idSpectra*.root", config["analysisFolder"] + 'Data')
+      downloadData(config["remoteBasePath"] + config["referenceRemotePath"], config["analysisFolder"] + 'Data')
       
       ### Systematics
       for name,systematic in systematics.items():
