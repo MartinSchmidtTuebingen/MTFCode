@@ -6,6 +6,11 @@ import subprocess
 from shlex import split
 import argparse
 
+from helperFunctions import *
+
+foldersToCreate = ['SummedSystematics', 'SingleSystematicResults', 'UEsubtractedJetResults', 'Efficiencycorrected', 'Efficiencycorrected/PDF']
+folderEffCorrection = 'Efficiencycorrected'
+
 config = {}
 systematics = {}
 
@@ -55,8 +60,24 @@ def main():
           
       # Now we have to exit because rsync does not work with ali environment. This is caught in the call script runAnalysis.sh by calling this python script again
       exit()
+      
+    #### Make result folders ###      
+    for resFolder in (foldersToCreate):
+        os.makedirs(analysisFolder +  '/' + resFolder, exist_ok = True)
     
-    subprocess.call(split("aliroot -l"))
+    #### Run individual systematic Error Estimation.
+    individualAnalyses = {
+        "Inclusive":"Jets_Inclusive",
+        "Jets":"Jets",
+        "UE":"Jets_UE"
+    }
+    for name,jetString in individualAnalyses.items():
+        if config['do'+name] == 1:
+            print('Do ' + name + ' analysis')
+            runSystematicProcess(config['systematics' + name], systematics, config, jetString, systematicDay) 
+            #runCalculateEfficiency(jetString, config, systematicDay, systematicDay)
+      
+    #subprocess.call(split("aliroot -l"))
 
 if __name__ == "__main__":
     main()
