@@ -5,6 +5,7 @@ Usage:
 - Run "./runAnalysis.sh create <PROJECT_NAME> to create a project folder (name should start with LHC to be hidden by gitignore)
 - Adjust config.json in analysis folder to your parameters (explanation further down)
 - Run "./runAnalysis.sh <PROJECT_NAME>" to run a specific analysis
+- Run "./runAnalysis.sh <PROJECT_NAME> -h" to get possible parameters
 
 
 Explanation of config.json:
