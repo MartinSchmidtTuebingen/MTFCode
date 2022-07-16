@@ -16,9 +16,11 @@ defaultTasks='sys,eff,ue'
 config = {}
 systematics = {}
 
-def downloadData(remotePattern, targetpath):
+def downloadData(remotePattern, targetpath, excludePattern = ""):
     os.makedirs(targetpath, exist_ok = True)
     downloadCommand = "rsync -a --ignore-existing " + remotePattern + " " + targetpath + " --progress"
+    if excludePattern != "":
+      downloadCommand = downloadCommand + " --exclude=" + excludePattern
     subprocess.call(split(downloadCommand))
 
 def main():
@@ -34,28 +36,14 @@ def main():
     parser.add_argument('-c','--continueRun', type=int, help='Continue after task to perform', required=False, default=0)
     
     args = parser.parse_args()
-    print(args)
     
     analysisFolder = args.folder
-    systematicDay = args.systematic
     download = False if args.download == 0 else True
   
     print("Folder:" + analysisFolder)
     
     if download:
         print("Download data:")
-        
-    defaultTasksList = defaultTasks.split(',')
-    tasksToPerform = args.tasks.lower().split(',')
-    continueRun = False if args.continueRun == 0 else True 
-    print(defaultTasks.split(',').index(tasksToPerform[0]))
-    if len(tasksToPerform) == 1 and continueRun:
-        tasksToPerform = defaultTasksList[defaultTasksList.index(tasksToPerform[0]):]
-        
-    print(tasksToPerform)
-    
-    if systematicDay != None:
-      print("Day for systematics:" + systematicDay)
   
     #### Load config file ###
     with open(analysisFolder + "/config.json", "r") as configFile:
@@ -72,10 +60,24 @@ def main():
       
       ### Systematics
       for name,systematic in systematics.items():
-          downloadData(config["remoteBasePath"] + systematic["sourcePath"], config["analysisFolder"] + systematic["savePath"])
+          downloadData(config["remoteBasePath"] + systematic["sourcePath"], config["analysisFolder"] + systematic["savePath"], systematic["excludePattern"] if "excludePattern" in systematic else "")
           
       # Now we have to exit because rsync does not work with ali environment. This is caught in the call script runAnalysis.sh by calling this python script again
       exit()
+      
+    defaultTasksList = defaultTasks.split(',')
+    tasksToPerform = args.tasks.lower().split(',')
+    continueRun = False if args.continueRun == 0 else True 
+    print(defaultTasks.split(',').index(tasksToPerform[0]))
+    if len(tasksToPerform) == 1 and continueRun:
+        tasksToPerform = defaultTasksList[defaultTasksList.index(tasksToPerform[0]):]
+        
+    print("Perform tasks: " + str(tasksToPerform))
+    
+    systematicDay = args.systematic
+    
+    if systematicDay != None:
+      print("Day for systematics:" + systematicDay)
       
     #### Make result folders ###      
     for resFolder in (foldersToCreate):

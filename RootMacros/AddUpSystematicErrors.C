@@ -155,6 +155,13 @@ Int_t AddUpSystematicErrors(const TString path, const TString outFileTitle, cons
   if (!fileNames || numFiles < 1)
     return -1;
   
+    // Load data points with statistical errors
+  TFile* fReferenceData = TFile::Open(fileNameReference.Data());
+  if (!fReferenceData) {
+    std::cout << "Failed to open reference file \"" << fileNameReference.Data() << "\"!" << std::endl;
+    return -1;
+  }
+  
   // NOTE: the names of the systematic errors are always the same, only the names of the reference histos change!
   // Histo names for inclusive case (mode = -1)
   TFile* f[numFiles];
@@ -258,13 +265,7 @@ Int_t AddUpSystematicErrors(const TString path, const TString outFileTitle, cons
       
       grSysErrorYields[i][iFile]->SetName(Form("%s_fileID%d", grSysErrorYields[i][iFile]->GetName(), iFile));
     }
-  }
-  
-  // Load data points with statistical errors
-  TFile* fReferenceData = TFile::Open(fileNameReference.Data());
-  if (!fReferenceData) {
-    std::cout << "Failed to open file \"" << fileNameReference.Data() << "\"!" << std::endl;
-    return -1;
+    f[iFile]->Close();
   }
     
   TH1* hReferenceFractions[numSpecies] = { 0x0, };
@@ -313,6 +314,8 @@ Int_t AddUpSystematicErrors(const TString path, const TString outFileTitle, cons
     for (Int_t iPoint = 0; iPoint < grTotSysError[i]->GetN(); iPoint++) {
       sysErrorTotalSquared = 0;
       for (Int_t iFile = 0; iFile < numFiles; iFile++) {
+        if (!grSysError[i][iFile])
+          continue;
         // Already averages high and low value -> Since they are by now the same, this is ok.
         temp = grSysError[i][iFile]->GetErrorY(iPoint); 
         if (temp > 0) {
@@ -332,6 +335,8 @@ Int_t AddUpSystematicErrors(const TString path, const TString outFileTitle, cons
       for (Int_t iPoint = 0; iPoint < grTotSysErrorYields[i]->GetN(); iPoint++) {
         sysErrorTotalSquared = 0;
         for (Int_t iFile = 0; iFile < numFiles; iFile++) {
+          if (!grSysErrorYields[i][iFile])
+            continue;
           // Already averages high and low value -> Since they are by now the same, this is ok.
           temp = grSysErrorYields[i][iFile]->GetErrorY(iPoint); 
           if (temp > 0) {
@@ -352,6 +357,8 @@ Int_t AddUpSystematicErrors(const TString path, const TString outFileTitle, cons
       for (Int_t iPoint = 0; iPoint < grTotSysErrorToPiRatios[i]->GetN(); iPoint++) {
         sysErrorTotalSquared = 0;
         for (Int_t iFile = 0; iFile < numFiles; iFile++) {
+          if (!grSysErrorToPiRatios[i][iFile])
+            continue;
           // Already averages high and low value -> Since they are by now the same, this is ok.
           temp = grSysErrorToPiRatios[i][iFile]->GetErrorY(iPoint); 
           if (temp > 0) {

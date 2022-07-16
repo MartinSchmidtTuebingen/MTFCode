@@ -45,9 +45,9 @@ def callRootMacro(name, arguments):
 def runSystematicProcess(systematicsToProcess, systematics, config, jetString, systematicDay):
   analysisFolder = config['analysisFolder']
   systematicsPropertiesToProcess = dict(filter(lambda systematic : systematic[0] in systematicsToProcess, systematics.items()))
-  systematicInfoString = getSystematicInfoString(systematicsPropertiesToProcess, analysisFolder)
-  
   modeString =  config['modesInclusiveString'] if jetString.find('Inclusive') != -1 else config['modesJetsString']
+  
+  systematicInfoString = getSystematicInfoString(systematicsPropertiesToProcess, analysisFolder)
   
   arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'referencepath': analysisFolder + '/Data', 'outfilepath': analysisFolder + '/SingleSystematicResults', 'referenceFileSchema': config['fileNamePattern'], 'stringForSystematicInformation': systematicInfoString, 'centStepsString' : config['centString'], 'jetPtStepsString' : config['jetPtString'], 'modesInputString' : modeString, 'nSigma': config['nSigma']}
     
