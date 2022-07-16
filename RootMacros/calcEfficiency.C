@@ -1771,12 +1771,14 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   pathData.Replace(pathData.Last('/'), pathData.Length(), "");
   
   TString subDir = "";
-  if (sysErrorTypeMC == kErrorsOnlyMultDep)
-    subDir = "/results_divided_by_MB";
-  else if (sysErrorTypeMC == kErrorsForMerging || sysErrorTypeMC == kErrorsForMergingWithoutMultDep)
-    subDir = "/results_for_merging";
-  else if (sysErrorTypeMC == kErrorsForMergingOnlyMultDep)
-    subDir = "/results_for_merging/results_divided_by_MB";
+  
+  // Check if we should keep the subdirectories here
+//   if (sysErrorTypeMC == kErrorsOnlyMultDep)
+//     subDir = "/results_divided_by_MB";
+//   else if (sysErrorTypeMC == kErrorsForMerging || sysErrorTypeMC == kErrorsForMergingWithoutMultDep)
+//     subDir = "/results_for_merging";
+//   else if (sysErrorTypeMC == kErrorsForMergingOnlyMultDep)
+//     subDir = "/results_for_merging/results_divided_by_MB";
   
   TString pathSaveData = Form("%s%s", savePath.Data(), subDir.Data());
   

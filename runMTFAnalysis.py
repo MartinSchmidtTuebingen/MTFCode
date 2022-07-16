@@ -5,6 +5,7 @@ import json
 import subprocess
 from shlex import split
 import argparse
+import pathlib
 
 from helperFunctions import *
 
@@ -31,19 +32,20 @@ def main():
     
     analysisFolder = args.folder
     download = False if args.download == 0 else True
-  
-    print("Folder:" + analysisFolder)
     
     if download:
         print("Download data:")
+        
+    analysisFolder = str(pathlib.Path(analysisFolder).resolve()) + '/'
+    print("Folder:" + analysisFolder)
   
     #### Load config file ###
-    with open(analysisFolder + "/config.json", "r") as configFile:
+    with open(analysisFolder + "config.json", "r") as configFile:
         config = json.loads(configFile.read())
         
     systematics = config["systematics"]
     config = config["config"]
-    config["analysisFolder"] = analysisFolder + "/"
+    config["analysisFolder"] = analysisFolder
     
     if download:
       #### Download data ###
@@ -59,8 +61,7 @@ def main():
       
     defaultTasksList = defaultTasks.split(',')
     tasksToPerform = args.tasks.lower().split(',')
-    continueRun = False if args.continueRun == 0 else True 
-    print(defaultTasks.split(',').index(tasksToPerform[0]))
+    continueRun = args.continueRun != 0
     if len(tasksToPerform) == 1 and continueRun:
         tasksToPerform = defaultTasksList[defaultTasksList.index(tasksToPerform[0]):]
         
@@ -73,9 +74,9 @@ def main():
       
     #### Make result folders ###      
     for key,resFolder in foldersToCreate.items():
-        os.makedirs(analysisFolder + resFolder, exist_ok = True)
+        os.makedirs(config["analysisFolder"] + resFolder, exist_ok = True)
     
-    #### Run individual systematic Error Estimation.
+    #### Run error estimation, add up error estimation and calculate efficiency ###
     individualAnalyses = {
         "Inclusive":"Jets_Inclusive",
         "Jets":"Jets",
@@ -88,6 +89,10 @@ def main():
                 runSystematicProcess(config['systematics' + name], systematics, config, jetString, systematicDay) 
             if 'eff' in tasksToPerform:
                 runCalculateEfficiency(jetString, config, systematicDay, systematicDay)
+                
+    #### Subtract Underlying event ###
+    if 'ue' in tasksToPerform:
+        subtractUnderlyingEvent(config, systematicDay)
 
 if __name__ == "__main__":
     main()

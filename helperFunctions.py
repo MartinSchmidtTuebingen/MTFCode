@@ -120,3 +120,15 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
         
       if not isJetAnalysis:
         break
+      
+def subtractUnderlyingEvent(config, systematicDay):
+    arguments = {
+      'jetFilePattern' : config['analysisFolder'] + foldersToCreate['eff'] + "output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_%s__%s%s__" + systematicDay + "__" + systematicDay + ".root",
+      'ueFilePattern' : config['analysisFolder'] + foldersToCreate['eff'] + "output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_UE_%s__%s%s__" + systematicDay + "__" + systematicDay + ".root",
+      'jetPtStepsString' : config['jetPtString'],
+      'centStepsString' : config['centString'],
+      'modesInputString' : config['modesJetsString'],
+      'outputFilePattern' : config['analysisFolder'] + foldersToCreate['uesub'] + "output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_%s__%s%s__" + systematicDay + "__" + systematicDay + "_UEsubtractedJetResults.root",
+    }
+
+    callRootMacro("SubtractUnderlyingEvent", arguments)
