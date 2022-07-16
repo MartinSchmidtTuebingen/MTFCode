@@ -31,11 +31,6 @@ def main():
     args = parser.parse_args()
     
     analysisFolder = args.folder
-    download = False if args.download == 0 else True
-    
-    if download:
-        print("Download data:")
-        
     analysisFolder = str(pathlib.Path(analysisFolder).resolve()) + '/'
     print("Folder:" + analysisFolder)
   
@@ -44,12 +39,20 @@ def main():
         config = json.loads(configFile.read())
         
     systematics = config["systematics"]
+    fastSimulationConfig = config["fastSimulation"]
     config = config["config"]
     config["analysisFolder"] = analysisFolder
+    
+    download = args.download != 0
+    
+    #### Make result folders ###      
+    for key,resFolder in foldersToCreate.items():
+        os.makedirs(config["analysisFolder"] + resFolder, exist_ok = True)
     
     if download:
       #### Download data ###
       ### Reference data
+      print("Download data:")
       downloadData(config["remoteBasePath"] + config["referenceRemotePath"], config["analysisFolder"] + 'Data')
       
       ### Systematics
@@ -67,14 +70,19 @@ def main():
         
     print("Perform tasks: " + str(tasksToPerform))
     
+    if 'fitsim' in tasksToPerform:
+        #fitFastSimulationFactors(config, fastSimulationConfig)
+        createCorrectionFactorsFullMC(config)
+        exit()
+        
+    if 'mcjetsys' in tasksToPerform:
+        writeCorrectionFiles(config)
+        exit()
+    
     systematicDay = args.systematic
     
     if systematicDay != None:
       print("Day for systematics:" + systematicDay)
-      
-    #### Make result folders ###      
-    for key,resFolder in foldersToCreate.items():
-        os.makedirs(config["analysisFolder"] + resFolder, exist_ok = True)
     
     #### Run error estimation, add up error estimation and calculate efficiency ###
     individualAnalyses = {
@@ -93,6 +101,7 @@ def main():
     #### Subtract Underlying event ###
     if 'ue' in tasksToPerform:
         subtractUnderlyingEvent(config, systematicDay)
+        
 
 if __name__ == "__main__":
     main()
