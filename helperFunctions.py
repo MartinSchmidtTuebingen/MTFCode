@@ -10,24 +10,16 @@ obsNameToNumber = {
   'jt' : 4
 }
 
-#def isFloat(value):
-  #try:
-    #float(value)
-    #return True
-  #except ValueError:
-    #return False
-
-#def isInt(value):
-  #try:
-    #int(value)
-    #return True
-  #except ValueError:
-    #return False
-
+foldersToCreate = {
+  'single':'SingleSystematicResults/',
+  'summed':'SummedSystematics/',
+  'eff':'Efficiencycorrected/',
+  'uesub':'UEsubtractedJetResults/'
+}
 
 def callRootMacro(name, arguments):
-  folder_for_macros=str(pathlib.Path().resolve()) + '/RootMacros/'
-  cmd = "aliroot '" + folder_for_macros + name + ".C+("
+  folderForMacros=str(pathlib.Path().resolve()) + '/RootMacros/'
+  cmd = "aliroot '" + folderForMacros + name + ".C+("
 
   argStrings = list(())
   
@@ -49,17 +41,17 @@ def runSystematicProcess(systematicsToProcess, systematics, config, jetString, s
   
   systematicInfoString = getSystematicInfoString(systematicsPropertiesToProcess, analysisFolder)
   
-  arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'referencepath': analysisFolder + '/Data', 'outfilepath': analysisFolder + '/SingleSystematicResults', 'referenceFileSchema': config['fileNamePattern'], 'stringForSystematicInformation': systematicInfoString, 'centStepsString' : config['centString'], 'jetPtStepsString' : config['jetPtString'], 'modesInputString' : modeString, 'nSigma': config['nSigma']}
+  arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'referencepath': analysisFolder + '/Data', 'outfilepath': analysisFolder + foldersToCreate['single'], 'referenceFileSchema': config['fileNamePattern'], 'stringForSystematicInformation': systematicInfoString, 'centStepsString' : config['centString'], 'jetPtStepsString' : config['jetPtString'], 'modesInputString' : modeString, 'nSigma': config['nSigma']}
     
   callRootMacro("runSystematicErrorEstimation", arguments)  
   
   outputFilePatternList = list(())
   for sysName,sysVariables in systematicsPropertiesToProcess.items():
-    outputFilePatternList.append(analysisFolder + "/SingleSystematicResults/" + sysVariables['outputFilePattern'])
+    outputFilePatternList.append(analysisFolder + foldersToCreate['single'] + sysVariables['outputFilePattern'])
     
   outPutFiles = "|".join(outputFilePatternList)
     
-  arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'date': systematicDay, 'referenceFile': analysisFolder + '/Data/' + config['fileNamePattern'], 'centStepsString' : config['centString'], 'jetPtStepsString' : config['jetPtString'], 'modesInputString' : modeString, 'outPutFilesToAddUp': outPutFiles, 'outPath': analysisFolder + "/SummedSystematics", 'nSigma': config['nSigma']}
+  arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'date': systematicDay, 'referenceFile': analysisFolder + '/Data/' + config['fileNamePattern'], 'centStepsString' : config['centString'], 'jetPtStepsString' : config['jetPtString'], 'modesInputString' : modeString, 'outPutFilesToAddUp': outPutFiles, 'outPath': analysisFolder + foldersToCreate['summed'], 'nSigma': config['nSigma']}
   
   callRootMacro("runAddUpSystematicErrors", arguments)
   
@@ -100,8 +92,9 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
       for obs in obsValues:
         arguments = {
           'effFile': effFile,
-          'pathNameData': config['analysisFolder'] + "/SummedSystematics/" + fileNamePattern.format(obs,lowerCent, upperCent, jetPtString),
+          'pathNameData': config['analysisFolder'] + foldersToCreate['summed'] + fileNamePattern.format(obs,lowerCent, upperCent, jetPtString),
           'pathMCsysErrors': config['pathMCsysErrors'],
+          'savePath': config['analysisFolder'] + foldersToCreate['eff'],
           'correctGeantFluka': config['correctGeantFluka'],
           'newGeantFluka': config['newGeantFluka'],
           'scaleStrangeness': config['scaleStrangeness'],

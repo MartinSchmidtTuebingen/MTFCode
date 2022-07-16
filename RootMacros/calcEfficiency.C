@@ -1717,7 +1717,7 @@ for (Int_t iDim = 0; iDim < nEffDims; iDim++) {
 //___________________________________________________________________
 // Efficiency for inclusive spectra vs. pT (or also jets, but without using the generation)
 // E.g. a 'calcEfficiency.C+("finalCuts/MC_pp/7TeV/LHC10f6a/corrected/finalisedSplines/analytical/Jets/nclCut/noMCidForGen/bhess_PID_Jets_efficiency.root", "finalCuts/pp/7TeV/10d_10e_merged.pass2/finalisedSplines/finalMapsAndTail/Jets/nclCut/outputSystematicsTotal_SummedSystematicErrors__2014_02_12.root", "OliversMacros/sysErr/files", kTRUE, kTRUE, kTRUE, 0, -2, -2, -2, -2, -1, -1, 0, -100, 1, 0.9, 0.852, kTRUE)' -b -q
-Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString pathMCsysErrors, 
+Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString pathMCsysErrors, TString savePath,
                      Bool_t correctGeantFluka, Bool_t newGeantFluka, Bool_t scaleStrangeness,
                      Bool_t applyMuonCorrection,
                      Int_t chargeMode /*kNegCharge = -1, kAllCharged = 0, kPosCharge = 1*/,
@@ -1778,7 +1778,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   else if (sysErrorTypeMC == kErrorsForMergingOnlyMultDep)
     subDir = "/results_for_merging/results_divided_by_MB";
   
-  TString pathSaveData = Form("%s%s", pathData.Data(), subDir.Data());
+  TString pathSaveData = Form("%s%s", savePath.Data(), subDir.Data());
   
   gSystem->Exec((TString("mkdir -p ") + pathSaveData).Data());
   

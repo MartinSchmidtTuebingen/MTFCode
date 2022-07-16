@@ -8,13 +8,8 @@ import argparse
 
 from helperFunctions import *
 
-foldersToCreate = ['SummedSystematics', 'SingleSystematicResults', 'UEsubtractedJetResults', 'Efficiencycorrected', 'Efficiencycorrected/PDF']
-folderEffCorrection = 'Efficiencycorrected'
 # Add tasks to default if they should be done in the analysis run
 defaultTasks='sys,eff,ue'
-
-config = {}
-systematics = {}
 
 def downloadData(remotePattern, targetpath, excludePattern = ""):
     os.makedirs(targetpath, exist_ok = True)
@@ -24,9 +19,6 @@ def downloadData(remotePattern, targetpath, excludePattern = ""):
     subprocess.call(split(downloadCommand))
 
 def main():
-    global config
-    global systematics
-        
     parser = argparse.ArgumentParser(description='Script for MTF Analysis')
     
     parser.add_argument('-f','--folder', type=str, help='Analysis Folder', required=True)
@@ -80,8 +72,8 @@ def main():
       print("Day for systematics:" + systematicDay)
       
     #### Make result folders ###      
-    for resFolder in (foldersToCreate):
-        os.makedirs(analysisFolder +  '/' + resFolder, exist_ok = True)
+    for key,resFolder in foldersToCreate.items():
+        os.makedirs(analysisFolder + resFolder, exist_ok = True)
     
     #### Run individual systematic Error Estimation.
     individualAnalyses = {
