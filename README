@@ -8,7 +8,11 @@ Usage:
 - Run "./runAnalysis.sh <PROJECT_NAME> -h" to get possible parameters
 
 Fast simulation:
-
+- Download MC data (inclusive and jet) in mcPath set in json (not yet automatic)
+- Run "./runAnalysis <PROJECT_NAME> -t fitsim" to fit the fast simulation parameters. Check if the outcome (fastSimulationParameters* in "mcData" looks good. If not, you might have to change the base fast simulation parameters in config.json (TODO: Automatize this checking checking procedure)
+- Run the train with the correct fast simulation parameters (Explanation needed!!)
+- Download data in the appropriate folders (automatize procedure!)
+- Run "./runAnalysis <PROJECT_NAME> -t mcjetsys" to create the systematic files for the (jet) MCCorrection. They are loaded automatically in the efficiency calculation later
 
 
 Explanation of config.json:
@@ -24,8 +28,8 @@ Explanation of config.json:
         "chargeString": charge string used ("","_neg", "_pos")
         "charge": charge used
         "nSigma": 
-        "pathMCsysErrors": path to MC systematic errors from fast simulation
-        "pathMCCorrectionFile": correction file to MC systematic error
+        "mcPath": Path to MCData. Can be relative (Data/MCData), then it will start from PROJECT_NAME; or absolute path in system
+        "pathMCsysErrors": Path to MCSystematic files (outSysErr*). Can be relative (Data/MCData/MCSystematicFiles), then it will start from PROJECT_NAME; or absolute path in system
         "correctGeantFluka": Use geant fluka correction (depends on MC simulation)
         "newGeantFluka": Use "new" geant fluka correction (ommitted if correctGeantFluka is false)
         "scaleStrangeness": 
