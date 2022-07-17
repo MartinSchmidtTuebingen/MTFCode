@@ -14,8 +14,7 @@ foldersToCreate = {
     'single': 'SingleSystematicResults/',
     'summed': 'SummedSystematics/',
     'eff': 'Efficiencycorrected/',
-    'uesub': 'UEsubtractedJetResults/',
-    'mc':'Data/MCData/MCSystematicsFiles/'
+    'uesub': 'UEsubtractedJetResults/'
 }
 
 
@@ -86,8 +85,7 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
     isJetAnalysis = jetString.find(
         "Jets") != -1 and jetString.find("Inclusive") == -1
     obsValues = config['modesJets'] if isJetAnalysis else config['modesInclusive']
-    effFile = config['analysisFolder'] + "/Data/MCData/" + \
-        config['efficiencyFileNamePattern'].format(jetString)
+    effFile = config['mcPath'] + config['efficiencyFileNamePattern'].format(jetString)
 
     # file name pattern for summed systematic errors
     fileNamePattern = "outputSystematicsTotal_SummedSystematicErrors_" + jetString + "_{0}___centrality{1}_{2}_{3}_" + \
@@ -161,8 +159,8 @@ def fitFastSimulationFactors(config, fastSimulationConfig):
 
     parametersString = ';'.join(parameterList)
     arguments = {
-        'effFile': config['analysisFolder'] + "/Data/MCData/" + config['efficiencyFileNamePattern'].format('Jets_Inclusive'),
-        'outputfile': config['analysisFolder'] + "/Data/MCData/fastSimulationParameters" + "_" + config['MCRunName'] + ".root",
+        'effFile': config['mcPath'] + config['efficiencyFileNamePattern'].format('Jets_Inclusive'),
+        'outputfile': config['mcPath'] + "fastSimulationParameters" + "_" + config['MCRunName'] + ".root",
         'parameters': parametersString
     }
     callRootMacro("FitFastSimulationFactors", arguments)
@@ -170,8 +168,8 @@ def fitFastSimulationFactors(config, fastSimulationConfig):
 def createCorrectionFactorsFullMC(config):
     #### Produce Corrections factors of full MC run
     arguments = {
-        'pathNameEfficiency': config['analysisFolder'] + "/Data/MCData/" + config['efficiencyFileNamePattern'].format('Jets'),
-        'outfileName': config['analysisFolder'] + "/Data/MCData/",
+        'pathNameEfficiency': config['mcPath'] + config['efficiencyFileNamePattern'].format('Jets'),
+        'outfileName': config['mcPath'],
     }
     # TODO: Give observables, jetPts as argument, check if it can be merged with writeOutCorrectionFiles
     callRootMacro("createFileForBbBCorrections", arguments)
@@ -181,8 +179,8 @@ def writeCorrectionFiles(config):
     for eff in ["095", "100", "105"]:
         varFolder = "Eff" + eff + "_Res100"
         arguments = {
-            'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFilePath': config['analysisFolder'] + "/Data/MCData/",
+            'effFilePath': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFilePath': config['mcPath'],
             'addToFile': varFolder
         }
         # TODO: Give observables, jetPts as argument (also below). Check if this triple call can be simplified
@@ -191,24 +189,24 @@ def writeCorrectionFiles(config):
     for res in ["080", "120"]:
         varFolder = "Eff100" + "_Res" + res
         arguments = {
-            'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFilePath': config['analysisFolder'] + "/Data/MCData/",
+            'effFilePath': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFilePath': config['mcPath'],
             'addToFile': varFolder
         }
         callRootMacro("writeOutCorrectionFiles", arguments)
 
     for varFolder in ["LowPtDepletion", "LowPtEnhancement"]:
         arguments = {
-            'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFilePath': config['analysisFolder'] + "/Data/MCData/",
+            'effFilePath': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFilePath': config['mcPath'],
             'addToFile': varFolder
         }
         callRootMacro("writeOutCorrectionFiles", arguments)
 
     #### Produce correction files for fast simulation ###
     arguments = {
-        'effFilePath': config['analysisFolder'] + "/Data/MCData/",
-        'outFilePath': config['analysisFolder'] + "/Data/MCData/MCSystematicsFiles/"
+        'effFilePath': config['mcPath'],
+        'outFilePath': config['pathMCsysErrors']
     }
     # TODO: Give jetPtString etc.
     callRootMacro("sysErrorsPythiaFastJet", arguments)

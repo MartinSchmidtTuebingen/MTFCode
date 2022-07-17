@@ -48,7 +48,14 @@ def main():
     #### Make result folders ###      
     for key,resFolder in foldersToCreate.items():
         os.makedirs(config["analysisFolder"] + resFolder, exist_ok = True)
-    
+        
+    for mcPathName in ["mcPath", "pathMCsysErrors"]:
+        mcPath = config[mcPathName]
+        if not mcPath.startswith('/'):
+            mcPath = config["analysisFolder"] + '/' + mcPath
+            config[mcPathName] = mcPath
+        os.makedirs(mcPath, exist_ok = True)
+        
     if download:
       #### Download data ###
       ### Reference data
