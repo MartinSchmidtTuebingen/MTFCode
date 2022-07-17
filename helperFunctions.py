@@ -177,33 +177,33 @@ def createCorrectionFactorsFullMC(config):
     callRootMacro("createFileForBbBCorrections", arguments)
 
 def writeCorrectionFiles(config):
-    #### Write correction files ###
-    #for eff in ["095", "100", "105"]:
-        #varFolder = "Eff" + eff + "_Res100"
-        #arguments = {
-            #'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            #'outFilePath': config['analysisFolder'] + "/Data/MCData/",
-            #'addToFile': varFolder
-        #}
-        ## TODO: Give observables, jetPts as argument (also below). Check if this triple call can be simplified
-        #callRootMacro("writeOutCorrectionFiles", arguments)
+    ### Write correction files ###
+    for eff in ["095", "100", "105"]:
+        varFolder = "Eff" + eff + "_Res100"
+        arguments = {
+            'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFilePath': config['analysisFolder'] + "/Data/MCData/",
+            'addToFile': varFolder
+        }
+        # TODO: Give observables, jetPts as argument (also below). Check if this triple call can be simplified
+        callRootMacro("writeOutCorrectionFiles", arguments)
 
-    #for res in ["080", "120"]:
-        #varFolder = "Eff100" + "_Res" + res
-        #arguments = {
-            #'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            #'outFilePath': config['analysisFolder'] + "/Data/MCData/",
-            #'addToFile': varFolder
-        #}
-        #callRootMacro("writeOutCorrectionFiles", arguments)
+    for res in ["080", "120"]:
+        varFolder = "Eff100" + "_Res" + res
+        arguments = {
+            'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFilePath': config['analysisFolder'] + "/Data/MCData/",
+            'addToFile': varFolder
+        }
+        callRootMacro("writeOutCorrectionFiles", arguments)
 
-    #for varFolder in ["LowPtDepletion", "LowPtEnhancement"]:
-        #arguments = {
-            #'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            #'outFilePath': config['analysisFolder'] + "/Data/MCData/",
-            #'addToFile': varFolder
-        #}
-        #callRootMacro("writeOutCorrectionFiles", arguments)
+    for varFolder in ["LowPtDepletion", "LowPtEnhancement"]:
+        arguments = {
+            'effFilePath': config['analysisFolder'] + "/Data/MCData/" + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFilePath': config['analysisFolder'] + "/Data/MCData/",
+            'addToFile': varFolder
+        }
+        callRootMacro("writeOutCorrectionFiles", arguments)
 
     #### Produce correction files for fast simulation ###
     arguments = {

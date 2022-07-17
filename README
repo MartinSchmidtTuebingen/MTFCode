@@ -7,6 +7,9 @@ Usage:
 - Run "./runAnalysis.sh <PROJECT_NAME>" to run a specific analysis
 - Run "./runAnalysis.sh <PROJECT_NAME> -h" to get possible parameters
 
+Fast simulation:
+
+
 
 Explanation of config.json:
 {
@@ -44,127 +47,6 @@ Explanation of config.json:
         "jetPts": Used jetPt string
         "modesInclusive": modes for inclusive analysis
         "modesJets": modes for jet analysis
-        "MCVariationsEff": variation of mc efficiency
-        "MCVariationsRes": variation of mc resolution
-        "MCVariationsLowPt": variations in mc lowPt production
-        "FS_Parameters_Electron_neg": [
-            "7",
-            "0.6",
-            "5",
-            "3.2",
-            "3",
-            "8",
-            "2"
-        ],
-        "FS_Parameters_Electron_pos": [
-            "7",
-            "0.6",
-            "5",
-            "3.2",
-            "3",
-            "8",
-            "2"
-        ],
-        "FS_Parameters_Muon_neg": [
-            "9",
-            "0.8",
-            "4",
-            "1.6",
-            "4",
-            "3",
-            "3",
-            "10",
-            "3",
-            "12",
-            "2"
-        ],
-        "FS_Parameters_Muon_pos": [
-            "9",
-            "0.8",
-            "4",
-            "1.6",
-            "4",
-            "3",
-            "3",
-            "10",
-            "3",
-            "12",
-            "2"
-        ],
-        "FS_Parameters_Pion_neg": [
-            "9",
-            "0.8",
-            "4",
-            "1.6",
-            "4",
-            "3",
-            "3",
-            "10",
-            "3",
-            "12",
-            "2"
-        ],
-        "FS_Parameters_Pion_pos": [
-            "9",
-            "0.8",
-            "4",
-            "1.6",
-            "4",
-            "3",
-            "3",
-            "10",
-            "3",
-            "12",
-            "2"
-        ],
-        "FS_Parameters_Kaon_neg": [
-            "3",
-            "0.4",
-            "3",
-            "1.2",
-            "5",
-            "6",
-            "4",
-            "15",
-            "2"
-        ],
-        "FS_Parameters_Kaon_pos": [
-            "3",
-            "0.4",
-            "3",
-            "1.2",
-            "5",
-            "6",
-            "4",
-            "15",
-            "2"
-        ],
-        "FS_Parameters_Proton_neg": [
-            "6",
-            "0.4",
-            "4",
-            "1.6",
-            "4",
-            "2.5",
-            "2",
-            "8",
-            "5",
-            "12",
-            "2"
-        ],
-        "FS_Parameters_Proton_pos": [
-            "6",
-            "0.4",
-            "4",
-            "1.6",
-            "4",
-            "2.5",
-            "2",
-            "8",
-            "5",
-            "12",
-            "2"
-        ],
         "centString": "0;100;60;100;0;10",
         "jetPtString": "05;10;10;15;15;20;20;30",
         "modesInclusiveString": "Pt",
