@@ -23,7 +23,7 @@ Int_t ijT = 0;
 
 Int_t iObsAxis = 0;
 
-Int_t writeOutCorrectionFiles(TString effFile, TString outfilepath, TString addoutFileName) {
+Int_t writeOutCorrectionFiles(TString effFile, TString outFile) {
   TFile* fileEff = new TFile(effFile.Data());
   if (!fileEff) {
     printf("Failed to open efficiency file \"%s\"\n", effFile.Data());
@@ -115,7 +115,7 @@ Int_t writeOutCorrectionFiles(TString effFile, TString outfilepath, TString addo
 		}
 	}
   
-  TFile* outFile = new TFile((outfilepath + TString("/outCorrections_PythiaFastJet_") + addoutFileName + TString(".root")).Data(),"RECREATE");
+  TFile* outFile = new TFile(outFile.Data(),"RECREATE");
   
   for (Int_t species=-1;species<AliPID::kSPECIES;++species) {
     TString speciesString = species >= 0 ? (TString("_") + TString(AliPID::ParticleShortName(species))) : TString("");

@@ -179,9 +179,8 @@ def writeCorrectionFiles(config):
     for eff in ["095", "100", "105"]:
         varFolder = "Eff" + eff + "_Res100"
         arguments = {
-            'effFilePath': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFilePath': config['mcPath'],
-            'addToFile': varFolder
+            'effFile': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFile': config['mcPath'] + "/outCorrections_FastJetSimulation_" + varFolder + ".root"
         }
         # TODO: Give observables, jetPts as argument (also below). Check if this triple call can be simplified
         callRootMacro("writeOutCorrectionFiles", arguments)
@@ -189,17 +188,15 @@ def writeCorrectionFiles(config):
     for res in ["080", "120"]:
         varFolder = "Eff100" + "_Res" + res
         arguments = {
-            'effFilePath': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFilePath': config['mcPath'],
-            'addToFile': varFolder
+            'effFile': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFile': config['mcPath'] + "/outCorrections_FastJetSimulation_" + varFolder + ".root"
         }
         callRootMacro("writeOutCorrectionFiles", arguments)
 
     for varFolder in ["LowPtDepletion", "LowPtEnhancement"]:
         arguments = {
-            'effFilePath': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFilePath': config['mcPath'],
-            'addToFile': varFolder
+            'effFile': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFile': config['mcPath'] + "/outCorrections_FastJetSimulation_" + varFolder + ".root"
         }
         callRootMacro("writeOutCorrectionFiles", arguments)
 

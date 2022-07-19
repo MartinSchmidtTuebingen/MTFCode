@@ -187,13 +187,13 @@ void sysErrorsPythiaFastJet(TString fileDir = "files", TString saveDir = "files"
   
   TString strResDir = fileDir;
 
-  TString strInFileGen(Form("%s/outCorrections_PythiaFastJet_Eff100_Res100.root",strResDir.Data()));
+  TString strInFileGen(Form("%s/outCorrections_FastJetSimulation_Eff100_Res100.root",strResDir.Data()));
   
-  TString strInFile_100_100(Form("%s/outCorrections_PythiaFastJet_Eff100_Res100.root",strResDir.Data()));
-  TString strInFile_095_100(Form("%s/outCorrections_PythiaFastJet_Eff095_Res100.root",strResDir.Data()));
-  TString strInFile_105_100(Form("%s/outCorrections_PythiaFastJet_Eff105_Res100.root",strResDir.Data()));
-  TString strInFile_100_080(Form("%s/outCorrections_PythiaFastJet_Eff100_Res080.root",strResDir.Data()));
-  TString strInFile_100_120(Form("%s/outCorrections_PythiaFastJet_Eff100_Res120.root",strResDir.Data()));
+  TString strInFile_100_100(Form("%s/outCorrections_FastJetSimulation_Eff100_Res100.root",strResDir.Data()));
+  TString strInFile_095_100(Form("%s/outCorrections_FastJetSimulation_Eff095_Res100.root",strResDir.Data()));
+  TString strInFile_105_100(Form("%s/outCorrections_FastJetSimulation_Eff105_Res100.root",strResDir.Data()));
+  TString strInFile_100_080(Form("%s/outCorrections_FastJetSimulation_Eff100_Res080.root",strResDir.Data()));
+  TString strInFile_100_120(Form("%s/outCorrections_FastJetSimulation_Eff100_Res120.root",strResDir.Data()));
   
   TString strInFile[2*nVar+1] = {strInFile_100_100, strInFile_095_100, strInFile_105_100, strInFile_100_080, strInFile_100_120};
   
@@ -501,8 +501,8 @@ void sysErrorsPythiaFastJet(TString fileDir = "files", TString saveDir = "files"
     }
   } // writeSysErrors
   
-	TString strInFile_LowPtEnhancement(Form("%s/outCorrections_PythiaFastJet_LowPtEnhancement.root",strResDir.Data()));
-	TString strInFile_LowPtDepletion(Form("%s/outCorrections_PythiaFastJet_LowPtDepletion.root",strResDir.Data()));
+	TString strInFile_LowPtEnhancement(Form("%s/outCorrections_FastJetSimulation_LowPtEnhancement.root",strResDir.Data()));
+	TString strInFile_LowPtDepletion(Form("%s/outCorrections_FastJetSimulation_LowPtDepletion.root",strResDir.Data()));
   
   const Int_t nFFModes = 2;
 	
