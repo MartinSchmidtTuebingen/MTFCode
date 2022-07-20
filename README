@@ -3,7 +3,7 @@ Code for the Multi-Template-Fit Projekt in ALICE.
 Usage:
 - Run "./runAnalysis.sh init" to initialise the MTF project
 - Run "./runAnalysis.sh create <PROJECT_NAME> to create a project folder (name should start with LHC to be hidden by gitignore)
-- Adjust config.json in analysis folder to your parameters (explanation further down)
+- Adjust config.json in analysis folder to your parameters (explanation further down) (ATTENTION: Many parameters are still hard-coded in macros!)
 - Run "./runAnalysis.sh <PROJECT_NAME>" to run a specific analysis
 - Run "./runAnalysis.sh <PROJECT_NAME> -h" to get possible parameters
 
