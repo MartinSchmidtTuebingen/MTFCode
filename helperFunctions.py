@@ -200,10 +200,12 @@ def writeCorrectionFiles(config):
         }
         callRootMacro("writeOutCorrectionFiles", arguments)
 
-    #### Produce correction files for fast simulation ###
+def calculateJetMCCorrectionSysErrors(config):
+    #### Produce systematic errors for jet mc correction ###
     arguments = {
         'effFilePath': config['mcPath'],
         'outFilePath': config['pathMCsysErrors']
     }
     # TODO: Give jetPtString etc.
-    callRootMacro("sysErrorsPythiaFastJet", arguments)
+    #callRootMacro("sysErrorsPythiaFastJet", arguments)
+    callRootMacro("calculateSystematicErrorsFromFastSimulation", arguments)

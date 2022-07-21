@@ -78,12 +78,13 @@ def main():
     print("Perform tasks: " + str(tasksToPerform))
     
     if 'fitsim' in tasksToPerform:
-        #fitFastSimulationFactors(config, fastSimulationConfig)
-        createCorrectionFactorsFullMC(config)
+        fitFastSimulationFactors(config, fastSimulationConfig)
         exit()
         
     if 'mcjetsys' in tasksToPerform:
-        writeCorrectionFiles(config)
+        #createCorrectionFactorsFullMC(config)
+        #writeCorrectionFiles(config)
+        calculateJetMCCorrectionSysErrors(config)
         exit()
     
     systematicDay = args.systematic
