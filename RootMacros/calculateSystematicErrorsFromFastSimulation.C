@@ -20,10 +20,24 @@
 #include <iostream>
 #include <fstream>
 
-Bool_t  savePlots = kTRUE;
-Bool_t  writeSysErrors = kTRUE;
+const Int_t nModes = 5;
 
+const TString modeString[nModes] = {"TrackPt", "Z", "Xi", "R", "jT"};
+const Bool_t useModes[nModes] = {kTRUE, kTRUE, kTRUE, kTRUE, kTRUE};
 
+const Bool_t useLogX[nModes] = {kTRUE, kFALSE, kFALSE, kFALSE, kTRUE};
+const TString xAxeTitles[nModes] = {"#it{p}_{T} (GeV/#it{c})", "#it{z}", "#it{#xi}", "R", "j_{T} (GeV/#it{c})"};
+
+const Int_t nJetPtBins = 5;
+const Double_t jetPtLim[nJetPtBins+1] = {5,10,15,20,30,80}; // nBins+1 entries
+
+const TString strSp[] = {"","_pi","_K","_p","_e","_mu"}; 
+const Int_t nSpecies   = 5;
+
+const TString strTitSp[] = {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}","e^{+} + e^{-}"};//,"#mu^{+} + #mu^{-}"}; 
+
+const TString strSp_10f6a[] = {"","_pi","_K","_p","_e"};//,"_mu"}; 
+  
 // --------------------------------------------------
 
 void setHistoStyleColor(TH1* hist, Bool_t isSpectrum = kFALSE, Int_t color=2) {
@@ -136,7 +150,7 @@ TList* getList(TString name = "jets_noGenJets_trackTypeUndef_jetTypeUndef"){
   return list;
 }
 
-void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, TString modeNameDown, TString modeNameUp, TH1F* corrFacOriginalMC[5][5][5], TH1F* corrFacGenericFastSimulation[5][5][5], TH1F* fh1FFGenPrim[5][5][5], TString systematicHistogramIdentifier, Bool_t simpleCalculationSysError, TString fileSysErrorsPath);
+void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, TString modeNameDown, TString modeNameUp, TH1F* corrFacOriginalMC[5][5][5], TH1F* corrFacGenericFastSimulation[5][5][5], TH1F* fh1SpectraGenericFastSimulation[5][5][5], TString systematicHistogramIdentifier, TString shortVariationDescription, Bool_t simpleCalculationSysError, TString fileSysErrorsPath);
 
 // ----------------------------------------------------------------------------
 
@@ -147,25 +161,7 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
   gStyle->SetTitleY(1.0);
   gStyle->SetTitleH(0.06);//0.054);
   
-  const Int_t nModes = 5;
-  
-  TString modeString[nModes] = {"TrackPt", "Z", "Xi", "R", "jT"};
-  Bool_t useModes[nModes] = {kTRUE, kTRUE, kFALSE, kFALSE, kFALSE};
-  
-	const Bool_t useLogX[nModes] = {kTRUE, kFALSE, kFALSE, kFALSE, kTRUE};
-  TString xAxeTitles[nModes] = {"#it{p}_{T} (GeV/#it{c})", "#it{z}", "#it{#xi}", "R", "j_{T} (GeV/#it{c})"};
-
-  const Int_t nJetPtBins = 5;
-  Double_t jetPtLim[nJetPtBins+1] = {5,10,15,20,30,80}; // nBins+1 entries
-  
-  TString strSp[] = {"","_pi","_K","_p","_e","_mu"}; 
-  const Int_t nSpecies   = 5;
-
-  TString strTitSp[] = {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}","e^{+} + e^{-}"};//,"#mu^{+} + #mu^{-}"}; 
-
-  TString strSp_10f6a[] = {"","_pi","_K","_p","_e"};//,"_mu"}; 
-  
-  TH1F* fh1FFGenPrim[nModes][nSpecies][nJetPtBins];
+  TH1F* fh1SpectraGenericFastSimulation[nModes][nSpecies][nJetPtBins];
   
   const Int_t nVar = 2;
   const Bool_t useVariations[nVar] = {kTRUE, kTRUE};
@@ -222,9 +218,9 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
         
         TString strTitle(Form("fh1FF%sGen%s_%02d_%02d",modeString[mode].Data(),strSp_10f6a[sp].Data(),(int)jetPtLim[i],(int)jetPtLim[i+1]));
         
-        fh1FFGenPrim[mode][sp][i] = (TH1F*) gDirectory->Get(strTitle);
+        fh1SpectraGenericFastSimulation[mode][sp][i] = (TH1F*) gDirectory->Get(strTitle);
         
-        fh1FFGenPrim[mode][sp][i]->SetDirectory(0);
+        fh1SpectraGenericFastSimulation[mode][sp][i]->SetDirectory(0);
       }
     }
     gDirectory->cd("..");
@@ -249,8 +245,8 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
         
         TString strTit(Form("corrFac%s_GenericFastSimulation_%s_%d",modeString[mode].Data(), strSp[sp].Data(), i));
         
-        corrFacGenericFastSimulation[mode][sp][i] = (TH1F*) fh1FFGenPrim[mode][sp][i]->Clone(strTit);
-        corrFacGenericFastSimulation[mode][sp][i]->Divide(fh1FFGenPrim[mode][sp][i],fInput,1,1,"B");
+        corrFacGenericFastSimulation[mode][sp][i] = (TH1F*) fh1SpectraGenericFastSimulation[mode][sp][i]->Clone(strTit);
+        corrFacGenericFastSimulation[mode][sp][i]->Divide(fh1SpectraGenericFastSimulation[mode][sp][i],fInput,1,1,"B");
         
         /*********/
         
@@ -284,40 +280,22 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
   f2.Close();
   
   // Efficiency
-  createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff095_Res100.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff105_Res100.root",strResDir.Data()), "Eff095", "Eff105", corrFacOriginalMC, corrFacGenericFastSimulation, fh1FFGenPrim, "Eff", kTRUE, saveDir);
+  createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff095_Res100.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff105_Res100.root",strResDir.Data()), "Eff095", "Eff105", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "Eff", "Efficiency +/- 5%", kTRUE, saveDir);
   
   // Resolution
-  createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff100_Res080.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff100_Res120.root",strResDir.Data()), "Res080", "Res120", corrFacOriginalMC, corrFacGenericFastSimulation, fh1FFGenPrim, "Res", kTRUE, saveDir);
+  createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff100_Res080.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff100_Res120.root",strResDir.Data()), "Res080", "Res120", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "Res", "Resolution +/- 20%", kTRUE, saveDir);
   
   // Jet Shape
-  createSystematicErrorsFromFiles(Form("%s/outCorrections_PythiaFastJet_LowPtEnhancement.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_LowPtDepletion.root",strResDir.Data()), "LowPtEnhancement", "LowPtDepletion", corrFacOriginalMC, corrFacGenericFastSimulation, fh1FFGenPrim, "BbB", kFALSE, saveDir);
+  createSystematicErrorsFromFiles(Form("%s/outCorrections_PythiaFastJet_LowPtEnhancement.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_LowPtDepletion.root",strResDir.Data()), "LowPtEnhancement", "LowPtDepletion", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "BbB", "Low-pt enhanced/depleted", kFALSE, saveDir);
 }
 
-void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, TString modeNameDown, TString modeNameUp, TH1F* corrFacOriginalMC[5][5][5], TH1F* corrFacGenericFastSimulation[5][5][5], TH1F* fh1FFGenPrim[5][5][5], TString systematicHistogramIdentifier, Bool_t simpleCalculationSysError, TString fileSysErrorsPath)
+void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, TString modeNameDown, TString modeNameUp, TH1F* corrFacOriginalMC[5][5][5], TH1F* corrFacGenericFastSimulation[5][5][5], TH1F* fh1SpectraGenericFastSimulation[5][5][5], TString systematicHistogramIdentifier, TString shortVariationDescription, Bool_t simpleCalculationSysError, TString fileSysErrorsPath)
 {
   gStyle->SetTitleStyle(0);
   gStyle->SetTitleX(0.5);
   gStyle->SetTitleAlign(23);
   gStyle->SetTitleY(1.0);
   gStyle->SetTitleH(0.06);//0.054);
-  
-  const Int_t nModes = 5;
-  
-  TString modeString[nModes] = {"TrackPt", "Z", "Xi", "R", "jT"};
-  Bool_t useModes[nModes] = {kTRUE, kTRUE, kFALSE, kFALSE, kFALSE};
-  
-	const Bool_t useLogX[nModes] = {kTRUE, kFALSE, kFALSE, kFALSE, kTRUE};
-  TString xAxeTitles[nModes] = {"#it{p}_{T} (GeV/#it{c})", "#it{z}", "#it{#xi}", "R", "j_{T} (GeV/#it{c})"};
-
-  const Int_t nJetPtBins = 5;
-  Double_t jetPtLim[nJetPtBins+1] = {5,10,15,20,30,80}; // nBins+1 entries
-  
-  TString strSp[] = {"","_pi","_K","_p","_e","_mu"}; 
-  const Int_t nSpecies   = 5;
-
-  TString strTitSp[] = {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}","e^{+} + e^{-}"};//,"#mu^{+} + #mu^{-}"}; 
-
-  TString strSp_10f6a[] = {"","_pi","_K","_p","_e"};//,"_mu"}; 
   
   const Int_t nSysVariations = 2;
 	
@@ -374,11 +352,6 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
       gDirectory->cd("..");
     }
     f.Close();
-    
-    TFile* checkGraphsFile = new TFile(Form("%s/checkGraphs.root", fileSysErrorsPath.Data()), "RECREATE");
-    fh1SysVariationGenPrim[0][0][0][0]->Write();
-    fh1SysVariationRecPrim[1][0][0][0]->Write();
-    checkGraphsFile->Close();
 		
     
 		for (Int_t sp=0; sp<nSpecies; sp++) {
@@ -395,10 +368,6 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
 			}
 		}
 	}
-  TFile* checkGraphsFile = new TFile(Form("%s/checkGraphs.root", fileSysErrorsPath.Data()), "UPDATE");
-  corrFactorsVariations[0][0][0][0]->Write();
-  corrFactorsVariations[1][0][0][0]->Write();
-  checkGraphsFile->Close();
 
 	// Calculate systematic errors
 	for (Int_t sp=0; sp<nSpecies; sp++) {
@@ -426,7 +395,7 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
             if (cont)
               sysErrScaled = sysErr/cont;
           } else {
-            if (fh1FFGenPrim[mode][sp][i]->GetBinContent(bin) == 0)
+            if (fh1SpectraGenericFastSimulation[mode][sp][i]->GetBinContent(bin) == 0)
               continue;
             
             Double_t minEl = cont;
@@ -469,115 +438,118 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
   }
 	
 	fFileSysErrors->Close();
-// 	
-// 	gStyle->SetOptStat(0);
-//   
-//   gStyle->SetTitleStyle(0);
-//   gStyle->SetTitleX(0.5);
-//   gStyle->SetTitleAlign(23);
-//   gStyle->SetTitleY(1.0);
-//   gStyle->SetTitleH(0.06);
-// 	
-// 	const Int_t sysVariationModesColor[nSysVariations] = {51, 8};
-// 	const TString sysVariationModesNames[nSysVariations] = {"Low-pt enhanced", "Low-pt depleted"};
-// 	
-// 	for (Int_t mode=0;mode<nModes;mode++) {
-// 		Int_t selectBin = 0;
-// 
-// 		TCanvas* c1 = createCanvas(Form("c%d", mode), kTRUE);
-// 		TLegend* leg1 = createLegend(0);
-// 		
-// 		TCanvas* c2 = createCanvas(Form("c%d", mode + nModes));
-// 		TLegend* leg2 = createLegend(2);
-// 		
-// 		const Int_t nSpeciesPlot = 4;
-// 		
-// 		for(Int_t sp=0; sp<nSpeciesPlot; sp++){
-// 			for(Int_t i=0; i<nJetPtBins; i++){
-// 
-// 				if(i != selectBin) 
-// 					continue;
-// 			
-// 				c1->cd(sp+1)->SetLogx(useLogX[mode]);
-// 
-// 				TString strPlotTitle(Form("%s, #it{p}_{T}^{jet, ch} = %d-%d GeV/#it{c}", strTitSp[sp].Data(), (int)jetPtLim[i], (int)jetPtLim[i+1]));
-// 				
-// 				fh1FFGenPrim[mode][sp][i]->SetTitle(strPlotTitle);
-// 				fh1FFGenPrim[mode][sp][i]->SetXTitle(xAxeTitles[mode].Data());
-// 				fh1FFGenPrim[mode][sp][i]->SetYTitle(Form("1/#it{N}_{Jets} d#it{N}/d#it{%s}", xAxeTitles[mode].Data()));
-// 				setHistoStyleColor(fh1FFGenPrim[mode][sp][i], kTRUE, 2);
-// 				Int_t lastBinWithContent = fh1FFGenPrim[mode][sp][i]->FindLastBinAbove(0.0);
-// 				fh1FFGenPrim[mode][sp][i]->GetXaxis()->SetRange(1,lastBinWithContent);
-// 
-// 				Double_t maxValue = fh1FFGenPrim[mode][sp][i]->GetBinContent(fh1FFGenPrim[mode][sp][i]->GetMaximumBin());
-// 
-// 				for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
-// 					maxValue = TMath::Max(maxValue, fh1SysVariationGenPrim[sysVariationMode][mode][sp][i]->GetBinContent(fh1SysVariationGenPrim[sysVariationMode][mode][sp][i]->GetMaximumBin()));
-// 				}
-// 				
-// 				fh1FFGenPrim[mode][sp][i]->GetYaxis()->SetRangeUser(0,maxValue *1.5);
-// 				fh1FFGenPrim[mode][sp][i]->DrawCopy();  
-// 				for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
-// 					setHistoStyleColor(fh1SysVariationGenPrim[sysVariationMode][mode][sp][i],kTRUE, sysVariationModesColor[sysVariationMode]);
-// 					fh1SysVariationGenPrim[sysVariationMode][mode][sp][i]->DrawCopy("same");
-// 				}
-// 				fh1FFGenPrim[mode][sp][i]->DrawCopy("same"); //redraw on top   
-// 						
-// 				if(sp==0){
-// 					leg1->AddEntry(fh1FFGenPrim[mode][sp][i],"Reference, gen level","P");
-// 					for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
-// 						leg1->AddEntry(fh1SysVariationGenPrim[sysVariationMode][mode][sp][i],sysVariationModesNames[sysVariationMode].Data(),"P");
-// 					}
-// 					
-// 					leg1->Draw();
-// 				}
-// 				
-// 				gPad->RedrawAxis("");
-// 				gPad->RedrawAxis("G");
-// 				
-// 				c2->cd(sp+1)->SetLogx(useLogX[mode]);
-// 
-// 				corrFacGenericFastSimulation[mode][sp][i]->SetTitle(strPlotTitle);
-// 				corrFacGenericFastSimulation[mode][sp][i]->SetXTitle(xAxeTitles[mode].Data());
-// 				corrFacGenericFastSimulation[mode][sp][i]->SetYTitle("Correction Factor");
-// 				setHistoStyleColor(corrFacGenericFastSimulation[mode][sp][i],kFALSE,4);
-// 				lastBinWithContent = corrFacGenericFastSimulation[mode][sp][i]->FindLastBinAbove(0.0);
-// 				corrFacGenericFastSimulation[mode][sp][i]->GetXaxis()->SetRange(1,lastBinWithContent);
-// // 				corrFacGenericFastSimulation[mode][sp][i]->GetXaxis()->SetRangeUser(0,jetPtLim[i+1]);
-// 				corrFacGenericFastSimulation[mode][sp][i]->SetLineColor(4); 
-// 				maxValue = corrFacGenericFastSimulation[mode][sp][i]->GetBinContent(corrFacGenericFastSimulation[mode][sp][i]->GetMaximumBin());
-// 				
-// 				setHistoStyleColor(systematicVariationCorrFactor[mode][sp][i],kFALSE,4);
-// 				systematicVariationCorrFactor[mode][sp][i]->SetFillColor(7);
-// 				maxValue = TMath::Max(maxValue, systematicVariationCorrFactor[mode][sp][i]->GetBinContent(systematicVariationCorrFactor[mode][sp][i]->GetMaximumBin()));
-// 				
-// 				setHistoStyleColor(corrFacOriginalMC[mode][sp][i],kFALSE,2);
-// 				corrFacOriginalMC[mode][sp][i]->SetMarkerStyle(24);
-// 				maxValue = TMath::Max(maxValue, corrFacOriginalMC[mode][sp][i]->GetBinContent(corrFacOriginalMC[mode][sp][i]->GetMaximumBin()));
-// 				
-// 				//Do not use dynamic calculation here because correction can sometimes become very big
-// // 				corrFacGenericFastSimulation[mode][sp][i]->GetYaxis()->SetRangeUser(0.0,maxValue * 1.2);
-// 				corrFacGenericFastSimulation[mode][sp][i]->GetYaxis()->SetRangeUser(0.0,3.0);
-// 				corrFacGenericFastSimulation[mode][sp][i]->DrawCopy();  
-// 				systematicVariationCorrFactor[mode][sp][i]->DrawCopy("same,E2");
-// 				corrFacOriginalMC[mode][sp][i]->DrawCopy("same");
-// 				
-// 				if(sp==0){
-// 					leg2->AddEntry(corrFacOriginalMC[mode][sp][i],"Full simulation","P");
-// 					leg2->AddEntry(corrFacGenericFastSimulation[mode][sp][i],"Fast simulation","P");
-// 					leg2->AddEntry(systematicVariationCorrFactor[mode][sp][i],"Low-pt enhanced/depleted","F");
-// 					leg2->Draw();
-// 				}
-// 				
-// 				gPad->RedrawAxis("");
-// 				gPad->RedrawAxis("G");
-// 				
-// 				if (savePlots) {
-// 					c1->SaveAs(Form("%sspectraModFF_dNd%s_%02d_%02d.pdf", saveDir.Data(), modeString[mode].Data(), (int) jetPtLim[i],(int) jetPtLim[i+1]));
-// 					c2->SaveAs(Form("%scorrFacModFF_dNd%s_%02d_%02d.pdf", saveDir.Data(), modeString[mode].Data(), (int) jetPtLim[i],(int) jetPtLim[i+1]));
-// 				}
-// 					
-// 			}
-// 		}
-// 	}
+	
+	gStyle->SetOptStat(0);
+  
+  gStyle->SetTitleStyle(0);
+  gStyle->SetTitleX(0.5);
+  gStyle->SetTitleAlign(23);
+  gStyle->SetTitleY(1.0);
+  gStyle->SetTitleH(0.06);
+	
+	const Int_t sysVariationModesColor[nSysVariations] = {51, 8};
+	const TString sysVariationModesNames[nSysVariations] = {"Low-pt enhanced", "Low-pt depleted"};
+  const Int_t nSpeciesPlot = 4; //Do not plot electron
+	
+	TFile* qaPlotsFile = new TFile(Form("%s/qaPlots_%s.root", fileSysErrorsPath.Data(), systematicHistogramIdentifier.Data()),"RECREATE");
+  for(Int_t i=0; i<nJetPtBins; i++) {
+    for (Int_t mode=0;mode<nModes;mode++) {
+      if (!useModes[mode])
+        continue;
+      
+      TCanvas* c1 = createCanvas(Form("c%d", mode), kTRUE);
+      TLegend* leg1 = createLegend(0);
+      
+      TCanvas* c2 = createCanvas(Form("c%d", mode + nModes));
+      TLegend* leg2 = createLegend(2);
+
+      for(Int_t sp=0; sp<nSpeciesPlot; sp++){
+				c1->cd(sp+1)->SetLogx(useLogX[mode]);
+
+				TString strPlotTitle(Form("%s, #it{p}_{T}^{jet, ch} = %d-%d GeV/#it{c}", strTitSp[sp].Data(), (int)jetPtLim[i], (int)jetPtLim[i+1]));
+				
+				fh1SpectraGenericFastSimulation[mode][sp][i]->SetTitle(strPlotTitle);
+				fh1SpectraGenericFastSimulation[mode][sp][i]->SetXTitle(xAxeTitles[mode].Data());
+				fh1SpectraGenericFastSimulation[mode][sp][i]->SetYTitle(Form("1/#it{N}_{Jets} d#it{N}/d#it{%s}", xAxeTitles[mode].Data()));
+				setHistoStyleColor(fh1SpectraGenericFastSimulation[mode][sp][i], kTRUE, 2);
+				Int_t lastBinWithContent = fh1SpectraGenericFastSimulation[mode][sp][i]->FindLastBinAbove(0.0);
+				fh1SpectraGenericFastSimulation[mode][sp][i]->GetXaxis()->SetRange(1,lastBinWithContent);
+
+				Double_t maxValue = fh1SpectraGenericFastSimulation[mode][sp][i]->GetBinContent(fh1SpectraGenericFastSimulation[mode][sp][i]->GetMaximumBin());
+
+				for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
+					maxValue = TMath::Max(maxValue, fh1SysVariationGenPrim[sysVariationMode][mode][sp][i]->GetBinContent(fh1SysVariationGenPrim[sysVariationMode][mode][sp][i]->GetMaximumBin()));
+				}
+				
+				fh1SpectraGenericFastSimulation[mode][sp][i]->GetYaxis()->SetRangeUser(0,maxValue *1.5);
+				fh1SpectraGenericFastSimulation[mode][sp][i]->DrawCopy();  
+				for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
+					setHistoStyleColor(fh1SysVariationGenPrim[sysVariationMode][mode][sp][i],kTRUE, sysVariationModesColor[sysVariationMode]);
+					fh1SysVariationGenPrim[sysVariationMode][mode][sp][i]->DrawCopy("same");
+				}
+				fh1SpectraGenericFastSimulation[mode][sp][i]->DrawCopy("same"); //redraw on top   
+						
+				if(sp==0){
+					leg1->AddEntry(fh1SpectraGenericFastSimulation[mode][sp][i],"Reference, gen level","P");
+					for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
+						leg1->AddEntry(fh1SysVariationGenPrim[sysVariationMode][mode][sp][i],sysVariationModesNames[sysVariationMode].Data(),"P");
+					}
+					
+					leg1->Draw();
+				}
+				
+				gPad->RedrawAxis("");
+				gPad->RedrawAxis("G");
+				
+				c2->cd(sp+1)->SetLogx(useLogX[mode]);
+
+				corrFacGenericFastSimulation[mode][sp][i]->SetTitle(strPlotTitle);
+				corrFacGenericFastSimulation[mode][sp][i]->SetXTitle(xAxeTitles[mode].Data());
+				corrFacGenericFastSimulation[mode][sp][i]->SetYTitle("Correction Factor");
+				setHistoStyleColor(corrFacGenericFastSimulation[mode][sp][i],kFALSE,4);
+				lastBinWithContent = corrFacGenericFastSimulation[mode][sp][i]->FindLastBinAbove(0.0);
+				corrFacGenericFastSimulation[mode][sp][i]->GetXaxis()->SetRange(1,lastBinWithContent);
+				corrFacGenericFastSimulation[mode][sp][i]->SetLineColor(4); 
+				maxValue = corrFacGenericFastSimulation[mode][sp][i]->GetBinContent(corrFacGenericFastSimulation[mode][sp][i]->GetMaximumBin());
+				
+				setHistoStyleColor(systematicVariationCorrFactor[mode][sp][i],kFALSE,4);
+				systematicVariationCorrFactor[mode][sp][i]->SetFillColor(7);
+				maxValue = TMath::Max(maxValue, systematicVariationCorrFactor[mode][sp][i]->GetBinContent(systematicVariationCorrFactor[mode][sp][i]->GetMaximumBin()));
+				
+				setHistoStyleColor(corrFacOriginalMC[mode][sp][i],kFALSE,2);
+				corrFacOriginalMC[mode][sp][i]->SetMarkerStyle(24);
+				maxValue = TMath::Max(maxValue, corrFacOriginalMC[mode][sp][i]->GetBinContent(corrFacOriginalMC[mode][sp][i]->GetMaximumBin()));
+				
+				corrFacGenericFastSimulation[mode][sp][i]->GetYaxis()->SetRangeUser(0.0,TMath::Min(3.0, maxValue * 1.2));
+				corrFacGenericFastSimulation[mode][sp][i]->DrawCopy();  
+				systematicVariationCorrFactor[mode][sp][i]->DrawCopy("same,E2");
+				corrFacOriginalMC[mode][sp][i]->DrawCopy("same");
+				
+				if(sp==0){
+					leg2->AddEntry(corrFacOriginalMC[mode][sp][i], "Full simulation", "P");
+					leg2->AddEntry(corrFacGenericFastSimulation[mode][sp][i], "Fast simulation", "P");
+					leg2->AddEntry(systematicVariationCorrFactor[mode][sp][i], shortVariationDescription.Data(),"F");
+					leg2->Draw();
+				}
+				
+				gPad->RedrawAxis("");                              
+				gPad->RedrawAxis("G");                             
+			}
+      c1->SetName(Form("spectraMod%s_dNd%s_%02d_%02d", systematicHistogramIdentifier.Data(), modeString[mode].Data(), (int) jetPtLim[i],(int) jetPtLim[i+1]));                               
+      c2->SetName(Form("corrFacMod%s_dNd%s_%02d_%02d", systematicHistogramIdentifier.Data(), modeString[mode].Data(), (int) jetPtLim[i],(int) jetPtLim[i+1]));
+      qaPlotsFile->cd();                        
+      if (systematicHistogramIdentifier == "BbB") // Only save spectra for LowPtEnhancement/depletion
+        c1->Write();
+      
+      c2->Write();
+      
+      if (i==0) {
+        // Only save lowest jetPt-bin directly as PDF
+        if (systematicHistogramIdentifier == "BbB")
+          c1->SaveAs(Form("%s/spectraMod%s_dNd%s_%02d_%02d.pdf", fileSysErrorsPath.Data(), systematicHistogramIdentifier.Data(), modeString[mode].Data(), (int) jetPtLim[i],(int) jetPtLim[i+1]));
+        c2->SaveAs(Form("%s/corrFacMod%s_dNd%s_%02d_%02d.pdf", fileSysErrorsPath.Data(), systematicHistogramIdentifier.Data(), modeString[mode].Data(), (int) jetPtLim[i],(int) jetPtLim[i+1]));
+      }
+		}
+	}
+	qaPlotsFile->Close();
 }
