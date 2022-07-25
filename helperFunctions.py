@@ -207,5 +207,4 @@ def calculateJetMCCorrectionSysErrors(config):
         'outFilePath': config['pathMCsysErrors']
     }
     # TODO: Give jetPtString etc.
-    #callRootMacro("sysErrorsPythiaFastJet", arguments)
     callRootMacro("calculateSystematicErrorsFromFastSimulation", arguments)

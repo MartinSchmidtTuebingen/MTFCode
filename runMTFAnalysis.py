@@ -12,13 +12,6 @@ from helperFunctions import *
 # Add tasks to default if they should be done in the analysis run
 defaultTasks='sys,eff,ue'
 
-def downloadData(remotePattern, targetpath, excludePattern = ""):
-    os.makedirs(targetpath, exist_ok = True)
-    downloadCommand = "rsync -a --ignore-existing " + remotePattern + " " + targetpath + " --progress"
-    if excludePattern != "":
-      downloadCommand = downloadCommand + " --exclude=" + excludePattern
-    subprocess.call(split(downloadCommand))
-
 def main():
     parser = argparse.ArgumentParser(description='Script for MTF Analysis')
     
@@ -82,8 +75,8 @@ def main():
         exit()
         
     if 'mcjetsys' in tasksToPerform:
-        #createCorrectionFactorsFullMC(config)
-        #writeCorrectionFiles(config)
+        createCorrectionFactorsFullMC(config)
+        writeCorrectionFiles(config)
         calculateJetMCCorrectionSysErrors(config)
         exit()
     
@@ -109,6 +102,15 @@ def main():
     #### Subtract Underlying event ###
     if 'ue' in tasksToPerform:
         subtractUnderlyingEvent(config, systematicDay)
+        
+        
+        
+def downloadData(remotePattern, targetpath, excludePattern = ""):
+    os.makedirs(targetpath, exist_ok = True)
+    downloadCommand = "rsync -a --ignore-existing " + remotePattern + " " + targetpath + " --progress"
+    if excludePattern != "":
+      downloadCommand = downloadCommand + " --exclude=" + excludePattern
+    subprocess.call(split(downloadCommand))
         
 
 if __name__ == "__main__":
