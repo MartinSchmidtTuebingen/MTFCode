@@ -4,3 +4,4 @@ LHC*
 *.so
 *.pcm
 __pycache__
+sysErrorsPythiaFastJet.C
