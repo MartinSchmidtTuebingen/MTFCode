@@ -75,8 +75,8 @@ def main():
         exit()
         
     if 'mcjetsys' in tasksToPerform:
-        createCorrectionFactorsFullMC(config)
-        writeCorrectionFiles(config)
+        #createCorrectionFactorsFullMC(config)
+        #writeCorrectionFiles(config)
         calculateJetMCCorrectionSysErrors(config)
         exit()
     

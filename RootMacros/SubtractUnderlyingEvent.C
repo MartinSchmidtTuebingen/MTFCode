@@ -1,7 +1,7 @@
 #include "TH1.h"
 #include "TH2F.h"
 #include "TObjString.h"
-//#include "THnSparseDefinitions.h"
+#include "THnSparseDefinitions.h"
 #include "TFile.h"
 #include "TMath.h"
 #include "TString.h"
@@ -12,18 +12,6 @@
 using namespace std;
 
 enum sysErrorAdditionType {kQuadratic = 0, kLinear = 1, kNosysErrorCalculation = 2};
-
-TString getStringFromTObjStrArray(TObjArray *arr, Int_t position)
-{
-  if (position > arr->GetEntriesFast()-1)
-    return "";
-  
-  TObjString* objStr = (TObjString*)(arr->At(position));
-  if (!objStr)
-    return "";
-  
-  return objStr->GetString();
-}
 
 Double_t CalculateJointSystematicError(Double_t sysErrorOriginal, Double_t sysErrorUE, Int_t sysErrorAddition);
 Double_t CalculateToPiRatioSysError(Double_t yieldk,Double_t sysErrorSpecies,Double_t yieldPion,Double_t sysErrorPion);

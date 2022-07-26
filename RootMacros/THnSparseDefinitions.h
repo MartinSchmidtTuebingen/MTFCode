@@ -10,6 +10,7 @@
 #include "AliPID.h"
 #include "TH1.h"
 #include "TAxis.h"
+#include "TObjString.h"
 #endif
 
 #define NEW_AXES
@@ -831,4 +832,15 @@ void PrintSettingsAxisRangeForMultiplicityAxisForMB()
     printf("OLD range definition for the multiplicity in the MB case....\n");
 }
 
+TString getStringFromTObjStrArray(TObjArray *arr, Int_t position)
+{
+  if (position > arr->GetEntriesFast()-1)
+    return "";
+  
+  TObjString* objStr = (TObjString*)(arr->At(position));
+  if (!objStr)
+    return "";
+  
+  return objStr->GetString();
+}
 #endif

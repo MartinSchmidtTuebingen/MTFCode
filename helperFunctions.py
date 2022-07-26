@@ -204,7 +204,9 @@ def calculateJetMCCorrectionSysErrors(config):
     #### Produce systematic errors for jet mc correction ###
     arguments = {
         'effFilePath': config['mcPath'],
-        'outFilePath': config['pathMCsysErrors']
+        'outFilePath': config['pathMCsysErrors'],
+        'jetPtStepsString': config['jetPtString'],
+        'modesInputString': config['modesJetsString']
     }
     # TODO: Give jetPtString etc.
     callRootMacro("calculateSystematicErrorsFromFastSimulation", arguments)
