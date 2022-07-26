@@ -425,7 +425,6 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
 	// Calculate systematic errors
 	for (Int_t sp=0; sp<nSpecies; sp++) {
 		for(Int_t i=0; i<nJetPtBins; i++) {
-      cout << i << endl;
 			for (Int_t mode=0;mode<nModes;++mode) {
 				if (!useModes[mode])
 					continue;
