@@ -1,3 +1,5 @@
+// Calculates the systematic errors for the mc correction. Needs input files from writeOutCorrectionFiles.C
+
 #include "TROOT.h"
 #include "TFile.h"
 #include "TH1F.h"
