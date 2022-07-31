@@ -66,6 +66,32 @@ Explanation of config.json:
               {"pattern":input file pattern (printf style), "histTitle":Title of histogram}
             ]
         }
+    },
+    "fastSimulation": {
+        "parameters": {
+            "species": {
+                "charge": [
+                    "degrees of freedom for first part",
+                    "pT-limit of first part",
+                    "degrees of freedom for second part",
+                    "pT-limit of second part"
+                    etc....
+                ]
+        },
+        "genericFastSimulation": {
+            "folder":"name of folder for generic fast simulation. Has be be in mcPath"
+        },
+        "variations": {
+            "name (not used)": {
+                "short": "Short name (used in histo)",
+                "active":true/false,
+                "legendEntryName": Legend entry for QA plot,
+                "simpleSysErrorCalculation": There are two possible calculation methods,
+                "inputs":[
+                    {"folder": "folder (in mcPath)", "name": "short Name (not really used except internally)"},
+                ]
+            }
+        }
     }
 }
 
