@@ -170,20 +170,6 @@
         }
     },
     "fastSimulation": {
-        "variations": {
-            "efficiency": [
-                "95",
-                "105"
-            ],
-            "resolution": [
-                "80",
-                "120"
-            ],
-            "lowpt": [
-                "LowPtDepletion",
-                "LowPtEnhancement"
-            ]
-        },
         "parameters": {
             "electron": {
                 "neg": [
@@ -311,6 +297,41 @@
                     "5",
                     "12",
                     "2"
+                ]
+            }
+        },
+        "genericFastSimulation": {
+            "folder":"Eff100_Res100"
+        },
+        "variations": {
+            "efficiency": {
+                "short": "Eff",
+                "active":true,
+                "legendEntryName": "Efficiency +/- 5%",
+                "simpleSysErrorCalculation": "1",
+                "inputs":[
+                    {"folder": "Eff095_Res100", "name": "Eff095"},
+                    {"folder": "Eff105_Res100", "name": "Eff105"}
+                ]
+            },
+            "resolution": {
+                "short": "Res",
+                "active":true,
+                "legendEntryName": "Resolution +/- 20%",
+                "simpleSysErrorCalculation": "1",
+                "inputs":[
+                    {"folder": "Eff100_Res080", "name": "Res080"},
+                    {"folder": "Eff100_Res120", "name": "Res120"}
+                ]
+            },
+            "lowpt": {
+                "short": "BbB",
+                "active":true,
+                "legendEntryName": "Low-pt enhanced/depleted",
+                "simpleSysErrorCalculation": "0",
+                "inputs":[
+                    {"folder": "LowPtEnhancement", "name": "LowPtEnhancement"},
+                    {"folder": "LowPtDepletion", "name": "LowPtDepletion"}
                 ]
             }
         }
