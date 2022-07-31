@@ -1,9 +1,15 @@
 //Creates from the full MC result the correction factors used to compare the fast MC simulation with the full MC simulation
 
 #include "TH3.h"
+#include "THnSparseDefinitions.h"
 #include "calcEfficiency.C"
 
-Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileName, TString trackObservables = "", TString jetPtLimitsString = "") {
+#include <iostream>
+
+const Int_t nOfTrackObservables = 5;
+const TString observableNames[nOfTrackObservables] = {"TrackPt", "Z", "Xi", "R", "jT"};  
+
+Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileName, TString jetPtStepsString = "", TString usedObservablesInputString = "") {
   TFile* fileEff = TFile::Open(pathNameEfficiency.Data());
   if (!fileEff) {
     printf("Failed to open efficiency file \"%s\"\n", pathNameEfficiency.Data());
@@ -15,6 +21,60 @@ Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileNam
     printf("Failed to load efficiency container!\n");
     return -1;
   }  
+  
+  //Setting jet limits and getting the number of rec/gen jets from the file associated with the efficiency file
+  Int_t nOfJetBins = 0;
+  
+  Int_t* jetPtLimits = 0x0;
+  if (jetPtStepsString != "") {
+    TObjArray* jetPtBins = jetPtStepsString.Tokenize(";");
+    if (!TMath::Even(jetPtBins->GetEntriesFast())) {
+      cout << "Attention: jetPtStepsString has to have even number of entries!" << endl;
+    } else {
+      nOfJetBins = jetPtBins->GetEntriesFast()/2;
+      jetPtLimits = new Int_t[2*nOfJetBins];
+      for (Int_t i=0;i<2*nOfJetBins;i++) {
+        jetPtLimits[i] = getStringFromTObjStrArray(jetPtBins, i).Atoi();
+      }
+    }
+  }
+  
+  if (!nOfJetBins) {
+    nOfJetBins = 5;
+    jetPtLimits = new Int_t[2*nOfJetBins];
+    jetPtLimits[0] = 5;
+    jetPtLimits[1] = 10;
+    jetPtLimits[2] = 10;
+    jetPtLimits[3] = 15;
+    jetPtLimits[4] = 15;
+    jetPtLimits[5] = 20;
+    jetPtLimits[6] = 20;
+    jetPtLimits[7] = 30;
+    jetPtLimits[8] = 30;
+    jetPtLimits[9] = 80;
+  }
+  
+  Int_t* nOfJets = new Int_t[2*nOfJetBins];
+  Int_t* jetBinLimits = new Int_t[2*nOfJetBins];
+  
+  Bool_t useObservable[nOfTrackObservables] = {kTRUE, kTRUE, kTRUE, kTRUE, kTRUE};
+  
+  if (usedObservablesInputString != "") {
+    TObjArray* modeArray = usedObservablesInputString.Tokenize(";");
+    Int_t nActivatedModes = modeArray->GetEntriesFast();
+
+    for (Int_t j=0;j<nOfTrackObservables;j++) {
+      useObservable[j] = kFALSE;
+      for (Int_t i=0;i<nActivatedModes;i++) {
+        TString activatedObservable = getStringFromTObjStrArray(modeArray, i);
+        activatedObservable = activatedObservable.CompareTo("pt", TString::kIgnoreCase) == 0 ? "TrackPt" : activatedObservable;
+        
+        if (activatedObservable.CompareTo(observableNames[j], TString::kIgnoreCase) == 0) {
+          useObservable[j] = kTRUE;
+        }
+      }
+    }
+  }
   
   // For backward compatibility:
   // Check whether "P_{T}" or "p_{T}" is used
@@ -47,15 +107,7 @@ Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileNam
   iDistance = data->GetVar("R");
   ijT = data->GetVar("j_{T} (GeV/c)");
   
-  const Int_t nOfTrackObservables = 5;
   Int_t trackObservableBins[nOfTrackObservables] = {iPt, iZ, iXi, iDistance, ijT};
-  TString observableNames[nOfTrackObservables] = {"TrackPt", "Z", "Xi", "R", "jT"};  
-  
-  //Setting jet limits and getting the number of rec/gen jets from the file associated with the efficiency file
-  const Int_t nOfJetBins = 5;
-  Double_t jetPtLimits[2*nOfJetBins] = {5.0,10.0,10.0,15.0,15.0,20.0,20.0,30.0,30.0,80.0};
-  Int_t nOfJets[2][nOfJetBins] = {0};
-  Int_t jetBinLimits[2*nOfJetBins] = {0};
   
   TString pathNameDataMC = pathNameEfficiency;
   pathNameDataMC.ReplaceAll("_efficiency", "");
@@ -99,8 +151,8 @@ Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileNam
     jetBinLimits[2*i] = hNjetsRec->GetYaxis()->FindFixBin(jetPtLimits[2*i] + 0.001);
     jetBinLimits[2*i+1] = hNjetsRec->GetYaxis()->FindFixBin(jetPtLimits[2*i+1] - 0.001);  
 
-    nOfJets[0][i] = hNjetsGen ? hNjetsGen->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
-    nOfJets[1][i] = hNjetsRec ? hNjetsRec->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
+    nOfJets[2*i] = hNjetsGen ? hNjetsGen->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
+    nOfJets[2*i+1] = hNjetsRec ? hNjetsRec->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
 
     jetBinLimits[2*i] = data->GetAxis(iJetPt, 0)->FindFixBin(jetPtLimits[2*i] + 0.001);
     jetBinLimits[2*i+1] = data->GetAxis(iJetPt, 0)->FindFixBin(jetPtLimits[2*i+1] - 0.001);      
@@ -114,14 +166,17 @@ Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileNam
   for (Int_t jetPtStep = 0;jetPtStep<nOfJetBins;++jetPtStep) {
     AliCFContainer *dataRebinned = new AliCFContainer(*data);
     dataRebinned->SetRangeUser(iJetPt,jetBinLimits[2*jetPtStep],jetBinLimits[2*jetPtStep+1],kTRUE);
-    Double_t factor_Numerator[2] = { nOfJets[1][jetPtStep] > 0 ? 1. / nOfJets[1][jetPtStep] : 0., 0.  };
-    Double_t factor_Denominator[2] = { nOfJets[0][jetPtStep] > 0 ? 1. / nOfJets[0][jetPtStep] : 0., 0.  };
+    Double_t factor_Numerator[2] = { nOfJets[2*jetPtStep + 1] > 0 ? 1. / nOfJets[2*jetPtStep + 1] : 0., 0.  };
+    Double_t factor_Denominator[2] = { nOfJets[2*jetPtStep] > 0 ? 1. / nOfJets[2*jetPtStep] : 0., 0.  };
     AliCFEffGrid* eff = new AliCFEffGrid("eff", "Efficiency x Acceptance x pT Resolution", *dataRebinned);
     eff->CalculateEfficiency(kStepRecWithRecCutsMeasuredObsPrimaries, kStepGenWithGenCuts);    
     eff->GetNum()->Scale(factor_Numerator);
     eff->GetDen()->Scale(factor_Denominator);
     
     for (Int_t observable = 0;observable<nOfTrackObservables;++observable) {
+      if (!useObservable[observable])
+        continue;
+      
       TH1* hEff = eff->Project(trackObservableBins[observable]);
       hEff->SetNameTitle(TString::Format("hBbBCorr%s_%02d_%02d",observableNames[observable].Data(),(Int_t)jetPtLimits[jetPtStep*2],(Int_t)jetPtLimits[jetPtStep*2+1]),"");  
       for (Int_t bin=1;bin<=hEff->GetNbinsX();++bin) {
@@ -148,13 +203,16 @@ Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileNam
       AliCFContainer *dataRebinned = new AliCFContainer(*data);
       dataRebinned->SetRangeUser(iJetPt,jetBinLimits[2*jetPtStep],jetBinLimits[2*jetPtStep+1],kTRUE);
       dataRebinned->SetRangeUser(iMCid,species+1,species+1,kTRUE);
-      Double_t factor_Numerator[2] = { nOfJets[1][jetPtStep] > 0 ? 1. / nOfJets[1][jetPtStep] : 0., 0.  };
-      Double_t factor_Denominator[2] = { nOfJets[0][jetPtStep] > 0 ? 1. / nOfJets[0][jetPtStep] : 0., 0.  };
+      Double_t factor_Numerator[2] = { nOfJets[2*jetPtStep + 1] > 0 ? 1. / nOfJets[2*jetPtStep + 1] : 0., 0.  };
+      Double_t factor_Denominator[2] = { nOfJets[2*jetPtStep] > 0 ? 1. / nOfJets[2*jetPtStep] : 0., 0.  };
       AliCFEffGrid* eff = new AliCFEffGrid("eff", "Efficiency x Acceptance x pT Resolution", *dataRebinned);
       eff->CalculateEfficiency(kStepRecWithRecCutsMeasuredObsPrimaries, kStepGenWithGenCuts);
       eff->GetNum()->Scale(factor_Numerator);
       eff->GetDen()->Scale(factor_Denominator);
-      for (Int_t observable = 0;observable<nOfTrackObservables;++observable) {        
+      for (Int_t observable = 0;observable<nOfTrackObservables;++observable) {  
+        if (!useObservable[observable])
+          continue;
+        
         TH1* hEff = (TH1*)eff->Project(trackObservableBins[observable]);  
         TString hName = TString::Format("hBbBCorr%s%s_%02d_%02d",observableNames[observable].Data(),speciesString.Data(),(Int_t)jetPtLimits[jetPtStep*2], (Int_t)jetPtLimits[jetPtStep*2+1]);   
         hEff->SetNameTitle(hName.Data(),"");  

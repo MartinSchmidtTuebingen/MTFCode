@@ -1,5 +1,8 @@
 // Calculates the systematic errors for the mc correction. Needs input files from writeOutCorrectionFiles.C
 
+// TODO: catch files not present
+// TODO: Loop through variations in this file! Best load json info directly 
+
 #include "TROOT.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -35,12 +38,9 @@ const TString xAxeTitles[nModes] = {"#it{p}_{T} (GeV/#it{c})", "#it{z}", "#it{#x
 Int_t nJetPtBins = 0;
 Int_t* jetPtLimits = 0x0;
 
-const TString strSp[] = {"","_pi","_K","_p","_e","_mu"}; 
-const Int_t nSpecies   = 5;
-
-const TString strTitSp[] = {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}","e^{+} + e^{-}"};//,"#mu^{+} + #mu^{-}"}; 
-
-const TString strSp_10f6a[] = {"","_pi","_K","_p","_e"};//,"_mu"}; 
+const Int_t nSpecies = 5;
+const TString strTitSp[nSpecies] = {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}","e^{+} + e^{-}"};//,"#mu^{+} + #mu^{-}"}; 
+const TString strSpeciesNames[nSpecies] = {"","_pi","_K","_p","_e"};//,"_mu"}; 
   
 // --------------------------------------------------
 
@@ -162,7 +162,11 @@ Int_t index(Int_t jetPtBin, Int_t mode, Int_t species) {
 
 // ----------------------------------------------------------------------------
 
-void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TString saveDir = "files", TString jetPtStepsString = "", TString modesInputString = "") {
+void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TString saveDir = "files", TString originalMCFile = "corrections_LHC13b2_efix_p1.root", TString genericFastSimulationFile = "outCorrections_FastJetSimulation_Eff100_Res100.root", TString variationShortName = "Eff", TString variationLegendEntry = "Efficiency +/- 5%", Bool_t simpleCalculationSysError = kTRUE, TString variationDownFile = "outCorrections_FastJetSimulation_Eff095_Res100.root", TString variationDownName = "Eff095", TString variationUpFile = "outCorrections_FastJetSimulation_Eff105_Res100.root", TString variationUpName = "Eff105", TString jetPtStepsString = "", TString modesInputString = "") {
+  
+  if (variationShortName == "") {
+      std::cout << "Variation entry needed" << std::endl;
+  }
   
   if (jetPtStepsString != "") {
     TObjArray* jetPtBins = jetPtStepsString.Tokenize(";");
@@ -179,6 +183,7 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
   }
   
   if (!nJetPtBins) {
+    // Standard jet Bins
     nJetPtBins = 5;
     jetPtLimits = new Int_t[2*nJetPtBins];
     jetPtLimits[0] = 5;
@@ -216,30 +221,15 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
   gStyle->SetTitleY(1.0);
   gStyle->SetTitleH(0.06);//0.054);
   
-  TH1F** fh1SpectraGenericFastSimulation = new TH1F*[nJetPtBins * nModes * nSpecies];
-  
-  const Int_t nVar = 2;
-  const Bool_t useVariations[nVar] = {kTRUE, kTRUE};
-  
-  TString legendEntry[nVar] = {"Efficiency +/- 5%", "Resolution +/- 20%"};
-  TString nameVar[nVar] = {"Eff", "Res"};
-  
   TH1F** corrFacOriginalMC = new TH1F*[nJetPtBins * nModes * nSpecies];
   
+  TH1F** fh1SpectraGenericFastSimulation = new TH1F*[nJetPtBins * nModes * nSpecies];
   TH1F** corrFacGenericFastSimulation = new TH1F*[nJetPtBins * nModes * nSpecies];
-
-  //TString strInFile10f6a = "files/outCorrections_10f6a_tpcCut.root";
-  TString strOriginalMCResults = fileDir + "/corrections_LHC13b2_efix_p1.root";
-  
-  TString strResDir = fileDir;
-
-  TString strInFileGen(Form("%s/outCorrections_FastJetSimulation_Eff100_Res100.root",strResDir.Data()));
  
   // Load original MC results
-
-  TFile f1(strOriginalMCResults,"READ");
+  TFile f1(Form("%s/%s",fileDir.Data(), originalMCFile.Data()),"READ");
   if (f1.IsZombie()) {
-    cout << "Could not open full simulation file " << strOriginalMCResults << ", no comparison shown." << endl;
+    cout << "Could not open full simulation file " << Form("%s/%s",fileDir.Data(), originalMCFile.Data()) << ", no comparison shown." << endl;
   }
   else {
     for (Int_t sp=0; sp<nSpecies; sp++) {
@@ -248,7 +238,7 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
           if (!useModes[mode])
             continue;
           
-          TString strTitle(Form("hBbBCorr%s%s_%02d_%02d",modeString[mode].Data(),strSp_10f6a[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));        
+          TString strTitle(Form("hBbBCorr%s%s_%02d_%02d",modeString[mode].Data(),strSpeciesNames[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));        
           corrFacOriginalMC[index(i, mode, sp)] = (TH1F*) gDirectory->Get(strTitle);
           corrFacOriginalMC[index(i, mode, sp)]->SetDirectory(0);
         }
@@ -257,12 +247,11 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
     f1.Close();  
   }
   
-  //TODO: catch files not present
-
-  TFile f2(strInFileGen,"READ");
+  // Load generic fast simulation results
+  TFile f2(Form("%s/%s", fileDir.Data(), genericFastSimulationFile.Data()),"READ");
   // Load fast MC results particle level
   for (Int_t sp=0; sp<nSpecies; sp++) {
-    gDirectory->cd(Form("Gen%s",strSp[sp].Data()));
+    gDirectory->cd(Form("Gen%s",strSpeciesNames[sp].Data()));
 
     for(Int_t i=0; i<nJetPtBins; i++){
     
@@ -271,7 +260,7 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
         if (!useModes[mode])
           continue;
         
-        TString strTitle(Form("fh1FF%sGen%s_%02d_%02d",modeString[mode].Data(),strSp_10f6a[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
+        TString strTitle(Form("fh1FF%sGen%s_%02d_%02d",modeString[mode].Data(),strSpeciesNames[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
         
         fh1SpectraGenericFastSimulation[index(i, mode, sp)] = (TH1F*) gDirectory->Get(strTitle);
         
@@ -285,20 +274,20 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
 
   for (Int_t sp=0; sp<nSpecies; sp++) {
     
-    gDirectory->cd(Form("RecCuts%s",strSp[sp].Data()));
+    gDirectory->cd(Form("RecCuts%s",strSpeciesNames[sp].Data()));
     
     for(Int_t i=0; i<nJetPtBins; i++){
       for (Int_t mode=0;mode<nModes;++mode) {
         if (!useModes[mode])
           continue;
         
-        TString strTitleRec(Form("fh1FF%sRecCuts%s_%02d_%02d",modeString[mode].Data(),strSp[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
+        TString strTitleRec(Form("fh1FF%sRecCuts%s_%02d_%02d",modeString[mode].Data(),strSpeciesNames[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
         
         TH1F* fInput = (TH1F*) gDirectory->Get(strTitleRec);
         
         // -- corr factors
         
-        TString strTit(Form("corrFac%s_GenericFastSimulation_%s_%d",modeString[mode].Data(), strSp[sp].Data(), i));
+        TString strTit(Form("corrFac%s_GenericFastSimulation_%s_%d",modeString[mode].Data(), strSpeciesNames[sp].Data(), i));
         
         corrFacGenericFastSimulation[index(i, mode, sp)] = (TH1F*) fh1SpectraGenericFastSimulation[index(i, mode, sp)]->Clone(strTit);
         corrFacGenericFastSimulation[index(i, mode, sp)]->Divide(fh1SpectraGenericFastSimulation[index(i, mode, sp)],fInput,1,1,"B");
@@ -334,14 +323,17 @@ void calculateSystematicErrorsFromFastSimulation(TString fileDir = "files", TStr
   }               
   f2.Close();
   
-  // Efficiency
-  createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff095_Res100.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff105_Res100.root",strResDir.Data()), "Eff095", "Eff105", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "Eff", "Efficiency +/- 5%", kTRUE, saveDir);
+  // Do variation
+  createSystematicErrorsFromFiles(Form("%s/%s",fileDir.Data(), variationDownFile.Data()), Form("%s/%s",fileDir.Data(), variationUpFile.Data()), variationDownName, variationUpName, corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, variationShortName, variationLegendEntry, simpleCalculationSysError, saveDir);
   
-  // Resolution
-  createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff100_Res080.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff100_Res120.root",strResDir.Data()), "Res080", "Res120", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "Res", "Resolution +/- 20%", kTRUE, saveDir);
-  
-  // Jet Shape
-  createSystematicErrorsFromFiles(Form("%s/outCorrections_PythiaFastJet_LowPtEnhancement.root",strResDir.Data()), Form("%s/outCorrections_FastJetSimulation_LowPtDepletion.root",strResDir.Data()), "LowPtEnhancement", "LowPtDepletion", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "BbB", "Low-pt enhanced/depleted", kFALSE, saveDir);
+//   // Efficiency
+//   createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff095_Res100.root",fileDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff105_Res100.root",fileDir.Data()), "Eff095", "Eff105", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "Eff", "Efficiency +/- 5%", kTRUE, saveDir);
+//   
+//   // Resolution
+//   createSystematicErrorsFromFiles(Form("%s/outCorrections_FastJetSimulation_Eff100_Res080.root",fileDir.Data()), Form("%s/outCorrections_FastJetSimulation_Eff100_Res120.root",fileDir.Data()), "Res080", "Res120", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "Res", "Resolution +/- 20%", kTRUE, saveDir);
+//   
+//   // Jet Shape
+//   createSystematicErrorsFromFiles(Form("%s/outCorrections_PythiaFastJet_LowPtEnhancement.root",fileDir.Data()), Form("%s/outCorrections_FastJetSimulation_LowPtDepletion.root",fileDir.Data()), "LowPtEnhancement", "LowPtDepletion", corrFacOriginalMC, corrFacGenericFastSimulation, fh1SpectraGenericFastSimulation, "BbB", "Low-pt enhanced/depleted", kFALSE, saveDir);
 }
 
 void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, TString modeNameDown, TString modeNameUp, TH1F** corrFacOriginalMC, TH1F** corrFacGenericFastSimulation, TH1F** fh1SpectraGenericFastSimulation, TString systematicHistogramIdentifier, TString shortVariationDescription, Bool_t simpleCalculationSysError, TString fileSysErrorsPath)
@@ -370,7 +362,7 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
 		TFile f(sysVariationFiles[sysVariationMode],"READ");
     // Load particle level spectra
 		for (Int_t sp=0; sp<nSpecies; sp++) {
-			gDirectory->cd(Form("Gen%s",strSp[sp].Data()));
+			gDirectory->cd(Form("Gen%s",strSpeciesNames[sp].Data()));
 
       for(Int_t i=0; i<nJetPtBins; i++){
       
@@ -379,7 +371,7 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
           if (!useModes[mode])
             continue;
           
-          TString strTitle(Form("fh1FF%sGen%s_%02d_%02d",modeString[mode].Data(),strSp_10f6a[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
+          TString strTitle(Form("fh1FF%sGen%s_%02d_%02d",modeString[mode].Data(),strSpeciesNames[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
           
           fh1SysVariationGenPrim[index(i, mode, sp) * nSysVariations + sysVariationMode] = (TH1F*) gDirectory->Get(strTitle);
           
@@ -390,14 +382,14 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
     }
     // Load detector level spectra
     for (Int_t sp=0; sp<nSpecies; sp++) {
-      gDirectory->cd(Form("RecCuts%s",strSp[sp].Data()));
+      gDirectory->cd(Form("RecCuts%s",strSpeciesNames[sp].Data()));
 
       for(Int_t i=0; i<nJetPtBins; i++){
         for (Int_t mode=0;mode<nModes;++mode) {
           if (!useModes[mode])
               continue;
           
-          TString strTitle(Form("fh1FF%sRecCuts%s_%02d_%02d",modeString[mode].Data(),strSp_10f6a[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
+          TString strTitle(Form("fh1FF%sRecCuts%s_%02d_%02d",modeString[mode].Data(),strSpeciesNames[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
           
           fh1SysVariationRecPrim[index(i, mode, sp) * nSysVariations + sysVariationMode] = (TH1F*) gDirectory->Get(strTitle);
           
@@ -415,7 +407,7 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
 					if (!useModes[mode])
 						continue;
 					
-					TString strTit(Form("corrFac%s_%s_%s_%d", modeString[mode].Data(), namesSysVariations[sysVariationMode].Data(), strSp[sp].Data(), i));
+					TString strTit(Form("corrFac%s_%s_%s_%d", modeString[mode].Data(), namesSysVariations[sysVariationMode].Data(), strSpeciesNames[sp].Data(), i));
 					
 					corrFactorsVariations[index(i, mode, sp) * nSysVariations + sysVariationMode] = (TH1F*) fh1SysVariationGenPrim[index(i, mode, sp) * nSysVariations + sysVariationMode]->Clone(strTit);
 					corrFactorsVariations[index(i, mode, sp) * nSysVariations + sysVariationMode]->Divide(fh1SysVariationGenPrim[index(i, mode, sp) * nSysVariations + sysVariationMode],fh1SysVariationRecPrim[index(i, mode, sp) * nSysVariations + sysVariationMode],1,1,"B");
@@ -431,8 +423,8 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
 				if (!useModes[mode])
 					continue;
 				
-				TString strNameCorrSysErrBbB(Form("corrFac%sSysEff_%02d_%02d%s", modeString[mode].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1], strSp[sp].Data()));
-				TString strNamehSystematicError(Form("hSysErr%s%s_%02d_%02d%s", systematicHistogramIdentifier.Data(), modeString[mode].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1], strSp[sp].Data()));
+				TString strNameCorrSysErrBbB(Form("corrFac%sSysEff_%02d_%02d%s", modeString[mode].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1], strSpeciesNames[sp].Data()));
+				TString strNamehSystematicError(Form("hSysErr%s%s_%02d_%02d%s", systematicHistogramIdentifier.Data(), modeString[mode].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1], strSpeciesNames[sp].Data()));
 				
 				systematicVariationCorrFactor[index(i, mode, sp)] = (TH1F*) corrFacGenericFastSimulation[index(i, mode, sp)]->Clone(strNameCorrSysErrBbB);
 				hSystematicError[index(i, mode, sp)] =  (TH1F*) corrFacGenericFastSimulation[index(i, mode, sp)]->Clone(strNamehSystematicError);

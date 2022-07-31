@@ -4,6 +4,8 @@
 #include "AliCFContainer.h"
 #include "AliPID.h"
 #include "TH2.h"
+#include "TString.h"
+#include "TObjArray.h"
 
 #include "THnSparseDefinitions.h"
 
@@ -23,7 +25,10 @@ Int_t ijT = 0;
 
 Int_t iObsAxis = 0;
 
-Int_t writeOutCorrectionFiles(TString effFile, TString outFile) {
+const Int_t nOfTrackObservables = 5;
+const TString observableNames[nOfTrackObservables] = {"TrackPt", "Z", "Xi", "R", "jT"};
+
+Int_t writeOutCorrectionFiles(TString effFile, TString outFileString, TString jetPtStepsString = "", TString usedObservablesInputString = "") {
   TFile* fileEff = new TFile(effFile.Data());
   if (!fileEff) {
     printf("Failed to open efficiency file \"%s\"\n", effFile.Data());
@@ -35,6 +40,62 @@ Int_t writeOutCorrectionFiles(TString effFile, TString outFile) {
     printf("Failed to load efficiency container!\n");
     return -1;
   }  
+  
+  fileEff->Close();
+  
+  //Setting jet limits and getting the number of rec/gen jets from the file associated with the efficiency file
+  Int_t nOfJetBins = 0;
+  
+  Int_t* jetPtLimits = 0x0;
+  if (jetPtStepsString != "") {
+    TObjArray* jetPtBins = jetPtStepsString.Tokenize(";");
+    if (!TMath::Even(jetPtBins->GetEntriesFast())) {
+      cout << "Attention: jetPtStepsString has to have even number of entries!" << endl;
+    } else {
+      nOfJetBins = jetPtBins->GetEntriesFast()/2;
+      jetPtLimits = new Int_t[2*nOfJetBins];
+      for (Int_t i=0;i<2*nOfJetBins;i++) {
+        jetPtLimits[i] = getStringFromTObjStrArray(jetPtBins, i).Atoi();
+      }
+    }
+  }
+  
+  if (!nOfJetBins) {
+    nOfJetBins = 5;
+    jetPtLimits = new Int_t[2*nOfJetBins];
+    jetPtLimits[0] = 5;
+    jetPtLimits[1] = 10;
+    jetPtLimits[2] = 10;
+    jetPtLimits[3] = 15;
+    jetPtLimits[4] = 15;
+    jetPtLimits[5] = 20;
+    jetPtLimits[6] = 20;
+    jetPtLimits[7] = 30;
+    jetPtLimits[8] = 30;
+    jetPtLimits[9] = 80;
+  }
+  
+  Int_t* nOfJets = new Int_t[2*nOfJetBins];
+  Int_t* jetBinLimits = new Int_t[2*nOfJetBins];
+  
+  Bool_t useObservable[nOfTrackObservables] = {kTRUE, kTRUE, kTRUE, kTRUE, kTRUE};
+  
+  if (usedObservablesInputString != "") {
+    TObjArray* modeArray = usedObservablesInputString.Tokenize(";");
+    Int_t nActivatedModes = modeArray->GetEntriesFast();
+
+    for (Int_t j=0;j<nOfTrackObservables;j++) {
+      useObservable[j] = kFALSE;
+      for (Int_t i=0;i<nActivatedModes;i++) {
+        TString activatedMode = getStringFromTObjStrArray(modeArray, i);
+        activatedMode = activatedMode.CompareTo("pt", TString::kIgnoreCase) == 0 ? "TrackPt" : activatedMode;
+        
+        if (activatedMode.CompareTo(observableNames[j], TString::kIgnoreCase) == 0) {
+          useObservable[j] = kTRUE;
+        }
+      }
+    }
+  }
   
   const Int_t nOfEffSteps = 2;
   EffSteps usedEffSteps[nOfEffSteps] = {kStepGenWithGenCuts, kStepRecWithRecCutsMeasuredObsPrimaries};
@@ -68,15 +129,7 @@ Int_t writeOutCorrectionFiles(TString effFile, TString outFile) {
   iDistance = data->GetVar("R");
   ijT = data->GetVar("j_{T} (GeV/c)");  
   
-  const Int_t nOfTrackObservables = 5;
   Int_t trackObservableBins[nOfTrackObservables] = {iPt, iZ, iXi, iDistance, ijT};
-  TString observableNames[nOfTrackObservables] = {"TrackPt", "Z", "Xi", "R", "jT"};
-  
-  //Setting jet limits and getting the number of rec/gen jets from the file associated with the efficiency file
-  const Int_t nOfJetBins = 5;
-  Double_t jetPtLimits[2*nOfJetBins] = {5.0,10.0,10.0,15.0,15.0,20.0,20.0,30.0,30.0,80.0};
-  Int_t nOfJets[2][nOfJetBins] = {0};
-  Int_t jetBinLimits[2*nOfJetBins] = {0};
   
   TString pathNameDataMC = effFile;
   pathNameDataMC.ReplaceAll("_efficiency", "");
@@ -110,12 +163,12 @@ Int_t writeOutCorrectionFiles(TString effFile, TString outFile) {
 			jetBinLimits[2*i] = data->GetAxis(iJetPt, 0)->FindFixBin(jetPtLimits[2*i] + 0.001);
 			jetBinLimits[2*i+1] = data->GetAxis(iJetPt, 0)->FindFixBin(jetPtLimits[2*i+1] - 0.001);   
 			
-			nOfJets[0][i] = hNjetsGen ? hNjetsGen->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
-			nOfJets[1][i] = hNjetsRec ? hNjetsRec->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
+			nOfJets[2*i] = hNjetsGen ? hNjetsGen->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
+			nOfJets[2*i+1] = hNjetsRec ? hNjetsRec->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, jetBinLimits[2*i], jetBinLimits[2*i+1]) : 1.;
 		}
 	}
   
-  TFile* outFile = new TFile(outFile.Data(),"RECREATE");
+  TFile* outFile = new TFile(outFileString.Data(),"RECREATE");
   
   for (Int_t species=-1;species<AliPID::kSPECIES;++species) {
     TString speciesString = species >= 0 ? (TString("_") + TString(AliPID::ParticleShortName(species))) : TString("");
@@ -127,11 +180,17 @@ Int_t writeOutCorrectionFiles(TString effFile, TString outFile) {
       for (Int_t jetPtStep = 0;jetPtStep<nOfJetBins;++jetPtStep) {
         data->SetRangeUser(iJetPt,jetBinLimits[2*jetPtStep],jetBinLimits[2*jetPtStep+1],kTRUE);
         for (Int_t observable = 0;observable<nOfTrackObservables;++observable) {
+          if (!useObservable[observable])
+            continue;
+          
           TH1* h = data->Project(usedEffSteps[effStep],trackObservableBins[observable]);
+          if (!h)
+            continue;
+          
           h->SetNameTitle(TString::Format("fh1FF%s%s%s_%02d_%02d",observableNames[observable].Data(),dirNameEffSteps[effStep].Data(),speciesString.Data(),(Int_t)jetPtLimits[jetPtStep*2],(Int_t)jetPtLimits[jetPtStep*2+1]),"");
     
-          if (nOfJets[TMath::Min(effStep,1)][jetPtStep])
-            h->Scale(1.0/nOfJets[TMath::Min(effStep,1)][jetPtStep]);
+          if (nOfJets[2*jetPtStep + TMath::Min(effStep,1)])
+            h->Scale(1.0/nOfJets[2*jetPtStep + TMath::Min(effStep,1)]);
           
           for (Int_t binNumber = 0;binNumber<=h->GetNbinsX();binNumber++) 
             h->SetBinContent(binNumber,h->GetBinContent(binNumber)/h->GetBinWidth(binNumber));
@@ -141,7 +200,6 @@ Int_t writeOutCorrectionFiles(TString effFile, TString outFile) {
       }
     }
   }
-  fileEff->Close();
   outFile->Close();
   return 0;
 }

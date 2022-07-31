@@ -76,8 +76,8 @@ def main():
         
     if 'mcjetsys' in tasksToPerform:
         createCorrectionFactorsFullMC(config)
-        writeCorrectionFiles(config)
-        calculateJetMCCorrectionSysErrors(config)
+        writeCorrectionFiles(config, fastSimulationConfig)
+        calculateJetMCCorrectionSysErrors(config, fastSimulationConfig)
         exit()
     
     systematicDay = args.systematic

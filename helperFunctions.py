@@ -169,44 +169,49 @@ def createCorrectionFactorsFullMC(config):
     #### Produce Corrections factors of full MC run
     arguments = {
         'pathNameEfficiency': config['mcPath'] + config['efficiencyFileNamePattern'].format('Jets'),
-        'outfileName': config['mcPath'],
-    }
-    # TODO: Give observables, jetPts as argument, check if it can be merged with writeOutCorrectionFiles
-    callRootMacro("createFileForBbBCorrections", arguments)
-
-def writeCorrectionFiles(config):
-    ### Write correction files ###
-    for eff in ["095", "100", "105"]:
-        varFolder = "Eff" + eff + "_Res100"
-        arguments = {
-            'effFile': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFile': config['mcPath'] + "/outCorrections_FastJetSimulation_" + varFolder + ".root"
-        }
-        # TODO: Give observables, jetPts as argument (also below). Check if this triple call can be simplified
-        callRootMacro("writeOutCorrectionFiles", arguments)
-
-    for res in ["080", "120"]:
-        varFolder = "Eff100" + "_Res" + res
-        arguments = {
-            'effFile': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFile': config['mcPath'] + "/outCorrections_FastJetSimulation_" + varFolder + ".root"
-        }
-        callRootMacro("writeOutCorrectionFiles", arguments)
-
-    for varFolder in ["LowPtDepletion", "LowPtEnhancement"]:
-        arguments = {
-            'effFile': config['mcPath'] + varFolder + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
-            'outFile': config['mcPath'] + "/outCorrections_FastJetSimulation_" + varFolder + ".root"
-        }
-        callRootMacro("writeOutCorrectionFiles", arguments)
-
-def calculateJetMCCorrectionSysErrors(config):
-    #### Produce systematic errors for jet mc correction ###
-    arguments = {
-        'effFilePath': config['mcPath'],
-        'outFilePath': config['pathMCsysErrors'],
+        'outfileName': config['mcPath'] + "/corrections_{}.root".format(config['MCRunName']),
         'jetPtStepsString': config['jetPtString'],
         'modesInputString': config['modesJetsString']
     }
-    # TODO: Give jetPtString etc.
-    callRootMacro("calculateSystematicErrorsFromFastSimulation", arguments)
+    # TODO: Give observables, jetPts as argument
+    callRootMacro("createFileForBbBCorrections", arguments)
+
+def writeCorrectionFiles(config, fastSimulationConfig):
+    ### Write correction files ###
+    correctionNames = [fastSimulationConfig["genericFastSimulation"]["folder"]]
+    for varName,varInfo in fastSimulationConfig["variations"].items():
+        if varInfo["active"]:
+            for inputInfo in varInfo["inputs"]:
+                correctionNames.append(inputInfo["folder"])
+            
+    for correctionName in correctionNames:
+        arguments = {
+            'effFile': config['mcPath'] + correctionName + '/' +  config['efficiencyFileNamePattern'].format('Jets'),
+            'outFile': config['mcPath'] + "/outCorrections_FastJetSimulation_{}.root".format(correctionName),
+            'jetPtStepsString': config['jetPtString'],
+            'modesInputString': config['modesJetsString']
+        }
+        callRootMacro("writeOutCorrectionFiles", arguments)
+
+def calculateJetMCCorrectionSysErrors(config, fastSimulationConfig):
+    #### Produce systematic errors for jet mc correction ###
+    originalMCFile = "corrections_{}.root".format(config['MCRunName'])
+    genericFastSimulationFile = "outCorrections_FastJetSimulation_{}.root".format(fastSimulationConfig["genericFastSimulation"]["folder"])
+    for varName,varInfo in fastSimulationConfig["variations"].items():
+        if varInfo["active"]:
+            arguments = {
+                'effFilePath': config['mcPath'],
+                'outFilePath': config['pathMCsysErrors'],
+                'originalMCFile': originalMCFile,
+                'genericFastSimulationFile': genericFastSimulationFile,
+                'variationShortName': varInfo["short"],
+                'variationLegendEntry': varInfo["legendEntryName"],
+                'simpleCalculationSysError': 'kTRUE' if varInfo["simpleSysErrorCalculation"] == "1" else 'kFALSE',
+                'variationDownFile': "outCorrections_FastJetSimulation_{}.root".format(varInfo["inputs"][0]["folder"]),
+                'variationDownName': varInfo["inputs"][0]["name"],
+                'variationUpFile': "outCorrections_FastJetSimulation_{}.root".format(varInfo["inputs"][1]["folder"]),
+                'variationUpName': varInfo["inputs"][1]["name"],
+                'jetPtStepsString': config['jetPtString'],
+                'modesInputString': config['modesJetsString']
+            }
+            callRootMacro("calculateSystematicErrorsFromFastSimulation", arguments)
