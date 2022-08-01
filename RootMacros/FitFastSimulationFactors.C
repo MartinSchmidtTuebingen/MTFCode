@@ -17,15 +17,6 @@
 
 using namespace std;
 
-TString getStringFromTObjStrArray(TObjArray *arr, Int_t position)
-{
-  TObjString* objStr = (TObjString*)(arr->At(position));
-  if (!objStr)
-    return "";
-
-  return objStr->GetString();
-}
-
 const Int_t speciescolors[5] = {kMagenta, kYellow, kRed, kGreen, kBlue};
 
 const Int_t smoothType = 2;     // (matching function and first derivative)
@@ -47,218 +38,221 @@ Int_t FitFastSimulationFactors(TString effFile, TString outputfile, TString para
   Double_t* cuts[AliPID::kSPECIES][2];
   Int_t* nparameters[AliPID::kSPECIES][2];
   
-  TObjArray* parameterArray = parameters.Tokenize(";");
-  for (Int_t species=0;species<AliPID::kSPECIES;species++) {
-    for (Int_t charge=0;charge<2;charge++) {
-      TString speciesString = getStringFromTObjStrArray(parameterArray, 2*species + charge);
-      
-      TObjArray* speciesParameterArray = speciesString.Tokenize("-");
-      
-      Int_t nSpeciesParameters = (speciesParameterArray->GetEntriesFast() + 1)/2;
-      parts[species][charge] = nSpeciesParameters;
-      cuts[species][charge] = new Double_t[nSpeciesParameters-1];
-      nparameters[species][charge] = new Int_t[nSpeciesParameters];
-      nparameters[species][charge][0] = getStringFromTObjStrArray(speciesParameterArray, 0).Atoi();
-      
-      for (Int_t cut=1;cut<nSpeciesParameters;cut++) {
-        cuts[species][charge][cut-1] = getStringFromTObjStrArray(speciesParameterArray, 2*cut-1).Atof();
-        nparameters[species][charge][cut] = getStringFromTObjStrArray(speciesParameterArray, 2*cut).Atoi();
+  if (parameters != "") {
+    TObjArray* parameterArray = parameters.Tokenize(";");
+    for (Int_t species=0;species<AliPID::kSPECIES;species++) {
+      for (Int_t charge=0;charge<2;charge++) {
+        TString speciesString = getStringFromTObjStrArray(parameterArray, 2*species + charge);
+        
+        TObjArray* speciesParameterArray = speciesString.Tokenize("-");
+        
+        Int_t nSpeciesParameters = (speciesParameterArray->GetEntriesFast() + 1)/2;
+        parts[species][charge] = nSpeciesParameters;
+        cuts[species][charge] = new Double_t[nSpeciesParameters-1];
+        nparameters[species][charge] = new Int_t[nSpeciesParameters];
+        nparameters[species][charge][0] = getStringFromTObjStrArray(speciesParameterArray, 0).Atoi();
+        
+        for (Int_t cut=1;cut<nSpeciesParameters;cut++) {
+          cuts[species][charge][cut-1] = getStringFromTObjStrArray(speciesParameterArray, 2*cut-1).Atof();
+          nparameters[species][charge][cut] = getStringFromTObjStrArray(speciesParameterArray, 2*cut).Atoi();
+        }
+        
+        delete speciesParameterArray;
+        speciesParameterArray = 0x0;
       }
-      
-      delete speciesParameterArray;
-      speciesParameterArray = 0x0;
     }
+    delete parameterArray;
+    parameterArray = 0x0;
+  } else {
+    // Standard parameters
+    //For negative electrons
+    Int_t species = AliPID::kElectron;
+    Int_t charge = 0;
+    parts[species][charge] = 4;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.6;
+    cuts[species][charge][1] = 3.2;
+    cuts[species][charge][2] = 8.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 7;
+    nparameters[species][charge][1] = 5;
+    nparameters[species][charge][2] = 3;
+    nparameters[species][charge][3] = 2;
+    
+    //For positive electrons
+    species = AliPID::kElectron;
+    charge = 1;
+    parts[species][charge] = 4;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.6;
+    cuts[species][charge][1] = 3.2;
+    cuts[species][charge][2] = 8.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 7;
+    nparameters[species][charge][1] = 5;
+    nparameters[species][charge][2] = 3;
+    nparameters[species][charge][3] = 2; 
+      
+    //For negative muons
+    species = AliPID::kMuon;
+    charge = 0;
+    parts[species][charge] = 6;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.8;
+    cuts[species][charge][1] = 1.6;
+    cuts[species][charge][2] = 3.0;
+    cuts[species][charge][3] = 10.0;
+    cuts[species][charge][4] = 12.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 9;
+    nparameters[species][charge][1] = 4;
+    nparameters[species][charge][2] = 4;
+    nparameters[species][charge][3] = 3;
+    nparameters[species][charge][4] = 3;
+    nparameters[species][charge][5] = 2;
+    
+    //For positive muons
+    species = AliPID::kMuon;
+    charge = 1;
+    parts[species][charge] = 6;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.8;
+    cuts[species][charge][1] = 1.6;
+    cuts[species][charge][2] = 3.0;
+    cuts[species][charge][3] = 10.0;
+    cuts[species][charge][4] = 12.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 9;
+    nparameters[species][charge][1] = 4;
+    nparameters[species][charge][2] = 4;
+    nparameters[species][charge][3] = 3;
+    nparameters[species][charge][4] = 3;
+    nparameters[species][charge][5] = 2;
+    
+      //For negative pions
+    species = AliPID::kPion;
+    charge = 0;
+    parts[species][charge] = 6;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.8;
+    cuts[species][charge][1] = 1.6;
+    cuts[species][charge][2] = 3.0;
+    cuts[species][charge][3] = 10.0;
+    cuts[species][charge][4] = 12.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 9;
+    nparameters[species][charge][1] = 4;
+    nparameters[species][charge][2] = 4;
+    nparameters[species][charge][3] = 3;
+    nparameters[species][charge][4] = 3;
+    nparameters[species][charge][5] = 2;
+    
+    //For positive pions
+    species = AliPID::kPion;
+    charge = 1;
+    parts[species][charge] = 6;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.8;
+    cuts[species][charge][1] = 1.6;
+    cuts[species][charge][2] = 3.0;
+    cuts[species][charge][3] = 10.0;
+    cuts[species][charge][4] = 12.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 9;
+    nparameters[species][charge][1] = 4;
+    nparameters[species][charge][2] = 4;
+    nparameters[species][charge][3] = 3;
+    nparameters[species][charge][4] = 3;
+    nparameters[species][charge][5] = 2;
+      
+      //For negative kaons
+    species = AliPID::kKaon;
+    charge = 0;
+    parts[species][charge] = 5;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.4;
+    cuts[species][charge][1] = 1.2;
+    cuts[species][charge][2] = 6.0;
+    cuts[species][charge][3] = 15.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 3;
+    nparameters[species][charge][1] = 3;
+    nparameters[species][charge][2] = 5;
+    nparameters[species][charge][3] = 4;
+    nparameters[species][charge][4] = 2;
+
+    //For positive kaons
+    species = AliPID::kKaon;
+    charge = 1;
+    parts[species][charge] = 5;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.4;
+    cuts[species][charge][1] = 1.2;
+    cuts[species][charge][2] = 6.0;
+    cuts[species][charge][3] = 15.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 3;
+    nparameters[species][charge][1] = 3;
+    nparameters[species][charge][2] = 5;
+    nparameters[species][charge][3] = 4;
+    nparameters[species][charge][4] = 2;
+    
+      //For negative protons
+    species = AliPID::kProton;
+    charge = 0;
+    parts[species][charge] = 6;
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.4;
+    cuts[species][charge][1] = 1.6;
+    cuts[species][charge][2] = 2.5;
+    cuts[species][charge][3] = 8.0;
+    cuts[species][charge][4] = 12.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 6;
+    nparameters[species][charge][1] = 4;
+    nparameters[species][charge][2] = 4;
+    nparameters[species][charge][3] = 2;
+    nparameters[species][charge][4] = 5;
+    nparameters[species][charge][5] = 2;
+  
+    //For positive protons
+    species = AliPID::kProton;
+    charge = 1;
+    parts[species][charge] = 6;  
+    
+    cuts[species][charge] = new Double_t[parts[species][charge]-1];
+    cuts[species][charge][0] = 0.4;
+    cuts[species][charge][1] = 1.6;
+    cuts[species][charge][2] = 2.5;
+    cuts[species][charge][3] = 8.0;
+    cuts[species][charge][4] = 12.0;
+    
+    nparameters[species][charge] = new Int_t[parts[species][charge]];
+    nparameters[species][charge][0] = 6;
+    nparameters[species][charge][1] = 4;
+    nparameters[species][charge][2] = 4;
+    nparameters[species][charge][3] = 2;
+    nparameters[species][charge][4] = 5;
+    nparameters[species][charge][5] = 2;
   }
-  delete parameterArray;
-  parameterArray = 0x0;
-
-  //For negative electrons
-  Int_t species = AliPID::kElectron;
-  Int_t charge = 0;
-  parts[species][charge] = 4;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.6;
-  cuts[species][charge][1] = 3.2;
-  cuts[species][charge][2] = 8.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 7;
-  nparameters[species][charge][1] = 5;
-  nparameters[species][charge][2] = 3;
-  nparameters[species][charge][3] = 2;
-  
-  //For positive electrons
-  species = AliPID::kElectron;
-  charge = 1;
-  parts[species][charge] = 4;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.6;
-  cuts[species][charge][1] = 3.2;
-  cuts[species][charge][2] = 8.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 7;
-  nparameters[species][charge][1] = 5;
-  nparameters[species][charge][2] = 3;
-  nparameters[species][charge][3] = 2; 
-    
-  //For negative muons
-  species = AliPID::kMuon;
-  charge = 0;
-  parts[species][charge] = 6;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.8;
-  cuts[species][charge][1] = 1.6;
-  cuts[species][charge][2] = 3.0;
-  cuts[species][charge][3] = 10.0;
-  cuts[species][charge][4] = 12.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 9;
-  nparameters[species][charge][1] = 4;
-  nparameters[species][charge][2] = 4;
-  nparameters[species][charge][3] = 3;
-  nparameters[species][charge][4] = 3;
-  nparameters[species][charge][5] = 2;
-   
-  //For positive muons
-  species = AliPID::kMuon;
-  charge = 1;
-  parts[species][charge] = 6;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.8;
-  cuts[species][charge][1] = 1.6;
-  cuts[species][charge][2] = 3.0;
-  cuts[species][charge][3] = 10.0;
-  cuts[species][charge][4] = 12.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 9;
-  nparameters[species][charge][1] = 4;
-  nparameters[species][charge][2] = 4;
-  nparameters[species][charge][3] = 3;
-  nparameters[species][charge][4] = 3;
-  nparameters[species][charge][5] = 2;
-   
-    //For negative pions
-  species = AliPID::kPion;
-  charge = 0;
-  parts[species][charge] = 6;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.8;
-  cuts[species][charge][1] = 1.6;
-  cuts[species][charge][2] = 3.0;
-  cuts[species][charge][3] = 10.0;
-  cuts[species][charge][4] = 12.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 9;
-  nparameters[species][charge][1] = 4;
-  nparameters[species][charge][2] = 4;
-  nparameters[species][charge][3] = 3;
-  nparameters[species][charge][4] = 3;
-  nparameters[species][charge][5] = 2;
-   
-  //For positive pions
-  species = AliPID::kPion;
-  charge = 1;
-  parts[species][charge] = 6;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.8;
-  cuts[species][charge][1] = 1.6;
-  cuts[species][charge][2] = 3.0;
-  cuts[species][charge][3] = 10.0;
-  cuts[species][charge][4] = 12.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 9;
-  nparameters[species][charge][1] = 4;
-  nparameters[species][charge][2] = 4;
-  nparameters[species][charge][3] = 3;
-  nparameters[species][charge][4] = 3;
-  nparameters[species][charge][5] = 2;
-    
-    //For negative kaons
-  species = AliPID::kKaon;
-  charge = 0;
-  parts[species][charge] = 5;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.4;
-  cuts[species][charge][1] = 1.2;
-  cuts[species][charge][2] = 6.0;
-  cuts[species][charge][3] = 15.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 3;
-  nparameters[species][charge][1] = 3;
-  nparameters[species][charge][2] = 5;
-  nparameters[species][charge][3] = 4;
-  nparameters[species][charge][4] = 2;
-
-  //For positive kaons
-  species = AliPID::kKaon;
-  charge = 1;
-  parts[species][charge] = 5;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.4;
-  cuts[species][charge][1] = 1.2;
-  cuts[species][charge][2] = 6.0;
-  cuts[species][charge][3] = 15.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 3;
-  nparameters[species][charge][1] = 3;
-  nparameters[species][charge][2] = 5;
-  nparameters[species][charge][3] = 4;
-  nparameters[species][charge][4] = 2;
-  
-    //For negative protons
-  species = AliPID::kProton;
-  charge = 0;
-  parts[species][charge] = 6;
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.4;
-  cuts[species][charge][1] = 1.6;
-  cuts[species][charge][2] = 2.5;
-  cuts[species][charge][3] = 8.0;
-  cuts[species][charge][4] = 12.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 6;
-  nparameters[species][charge][1] = 4;
-  nparameters[species][charge][2] = 4;
-  nparameters[species][charge][3] = 2;
-  nparameters[species][charge][4] = 5;
-  nparameters[species][charge][5] = 2;
- 
-  //For positive protons
-  species = AliPID::kProton;
-  charge = 1;
-  parts[species][charge] = 6;  
-  
-  cuts[species][charge] = new Double_t[parts[species][charge]-1];
-  cuts[species][charge][0] = 0.4;
-  cuts[species][charge][1] = 1.6;
-  cuts[species][charge][2] = 2.5;
-  cuts[species][charge][3] = 8.0;
-  cuts[species][charge][4] = 12.0;
-  
-  nparameters[species][charge] = new Int_t[parts[species][charge]];
-  nparameters[species][charge][0] = 6;
-  nparameters[species][charge][1] = 4;
-  nparameters[species][charge][2] = 4;
-  nparameters[species][charge][3] = 2;
-  nparameters[species][charge][4] = 5;
-  nparameters[species][charge][5] = 2;
     
   AliPieceWisePoly* polynoms[AliPID::kSPECIES][2];
   
@@ -340,8 +334,7 @@ Int_t FitFastSimulationFactors(TString effFile, TString outputfile, TString para
   }
   c->Write();
   output->Close();
-  
 
-return 0;
+  return 0;
 }
 

@@ -1,6 +1,8 @@
 import pathlib
+from pathlib import Path
 import subprocess
 from shlex import split
+import json
 
 obsNameToNumber = {
     'pt': 0,
@@ -18,9 +20,15 @@ foldersToCreate = {
 }
 
 
-def callRootMacro(name, arguments):
+def callRootMacro(name, arguments, doNotQuit = False, doNotRunInBackground = False):
     folderForMacros = str(pathlib.Path().resolve()) + '/RootMacros/'
-    cmd = "aliroot '" + folderForMacros + name + ".C+("
+    macroPath = folderForMacros + name + ".C"
+    filePath = Path(macroPath)
+    if not filePath.is_file():
+        print("Macro " + macroPath + " not found! Fix code!")
+        exit()
+        
+    cmd = "aliroot '" + macroPath + "+("
 
     argStrings = list(())
 
@@ -30,8 +38,12 @@ def callRootMacro(name, arguments):
         else:
             argStrings.append(str(argValue))
 
-    cmd += ", ".join(argStrings) + ")' -l -q -b"
-
+    cmd += ", ".join(argStrings) + ")' -l"
+    if not doNotRunInBackground:
+      cmd += " -b"
+    if not doNotQuit:
+      cmd += " -q"
+      
     subprocess.call(split(cmd))
 
 
@@ -149,7 +161,7 @@ def subtractUnderlyingEvent(config, systematicDay):
 
 
 def fitFastSimulationFactors(config, fastSimulationConfig):
-    #### Produce fast simulation parameters ###
+    #### Produce fast simulation parameters. Runs in a loop until fit looks good. ###
     parameters = fastSimulationConfig['parameters']
     parameterList = list(())
             
@@ -158,12 +170,40 @@ def fitFastSimulationFactors(config, fastSimulationConfig):
             parameterList.append('-'.join(fitparams))
 
     parametersString = ';'.join(parameterList)
+    
+    outputFile = config['mcPath'] + "fastSimulationParameters" + "_" + config['MCRunName'] + ".root"
     arguments = {
         'effFile': config['mcPath'] + config['efficiencyFileNamePattern'].format('Jets_Inclusive'),
-        'outputfile': config['mcPath'] + "fastSimulationParameters" + "_" + config['MCRunName'] + ".root",
+        'outputfile': outputFile,
         'parameters': parametersString
     }
     callRootMacro("FitFastSimulationFactors", arguments)
+    print("Check Output! Do the parametrized efficiencies follow the full mc efficiency? If uncertain, check also the single qa canvases in " + outputFile + ". If yes, edit the config.json. Leave aliroot with .q (maybe you have to press <ENTER> before.")
+    arguments = {
+        'fileName': outputFile,
+        'canvasName': "cEfficiencies"
+    }
+    callRootMacro("GetCanvasOutOfFile", arguments, True, True)
+    decision = input("Now press N/<AnyKey> to answer if the fit fits! If you press N, make certain you have already changed the config.json")
+    if decision.lower() == "n":
+        #### Reload config file ###
+        analysisFolder = config["analysisFolder"]
+        mcPath = config["mcPath"]
+        mcSysErrorPath = config["pathMCsysErrors"]
+        
+        with open(analysisFolder + "config.json", "r") as configFile:
+            config = json.loads(configFile.read())
+            
+        fastSimulationConfig = config["fastSimulation"]
+        config = config["config"]
+        config["analysisFolder"] = analysisFolder
+        config["mcPath"] = mcPath
+        config["pathMCsysErrors"] = mcSysErrorPath
+        fitFastSimulationFactors(config, fastSimulationConfig)
+    else:
+        return
+    
+    
 
 def createCorrectionFactorsFullMC(config):
     #### Produce Corrections factors of full MC run

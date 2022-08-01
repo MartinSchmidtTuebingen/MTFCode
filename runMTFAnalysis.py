@@ -27,6 +27,8 @@ def main():
     analysisFolder = str(pathlib.Path(analysisFolder).resolve()) + '/'
     print("Folder:" + analysisFolder)
   
+    download = args.download != 0
+    
     #### Load config file ###
     with open(analysisFolder + "config.json", "r") as configFile:
         config = json.loads(configFile.read())
@@ -35,8 +37,6 @@ def main():
     fastSimulationConfig = config["fastSimulation"]
     config = config["config"]
     config["analysisFolder"] = analysisFolder
-    
-    download = args.download != 0
     
     #### Make result folders ###      
     for key,resFolder in foldersToCreate.items():
