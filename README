@@ -32,9 +32,10 @@ Explanation of config.json:
         "pathMCsysErrors": Path to MCSystematic files (outSysErr*). Can be relative (Data/MCData/MCSystematicFiles), then it will start from PROJECT_NAME; or absolute path in system
         "correctGeantFluka": Use geant fluka correction (depends on MC simulation)
         "newGeantFluka": Use "new" geant fluka correction (ommitted if correctGeantFluka is false)
-        "scaleStrangeness": 
+        "scaleStrangeness": use strangeness scaling according to CMD plots (mcplots.cern.ch)
+        "mcGenerator": Name of the MC generator, must be of type AliAnalysisTaskMTFPID::EventGenerator
         "applyMuonCorrection": 
-        "constCorrAboveThreshold": 
+        "constCorrAboveThreshold": If above a certain pT a constant correction should be used (low statistics!)
         "rebinEffObs": 
         "etaAbsCut": Cut for eta in efficiency analysis
         "eps_trigger": 1,

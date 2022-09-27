@@ -449,11 +449,12 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
             Double_t maxEl = minEl;
             
             for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;sysVariationMode++) {
-              minEl = TMath::Min(minEl, corrFactorsVariations[index(i, mode, sp) * nSysVariations + sysVariationMode]->GetBinContent(bin));
-              maxEl = TMath::Max(maxEl, corrFactorsVariations[index(i, mode, sp) * nSysVariations + sysVariationMode]->GetBinContent(bin));
+              Double_t binContent = corrFactorsVariations[index(i, mode, sp) * nSysVariations + sysVariationMode]->GetBinContent(bin);
+              minEl = TMath::Min(minEl, binContent);
+              maxEl = TMath::Max(maxEl, binContent);
             }
             
-            if(minEl) 
+            if (minEl) 
               sysErr = 0.5*fabs((maxEl/minEl) - 1);
             
             sysErrScaled = sysErr;
@@ -510,7 +511,7 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
       TCanvas* c2 = createCanvas(Form("c%d", mode + nModes));
       TLegend* leg2 = createLegend(2);
 
-      for(Int_t sp=0; sp<nSpeciesPlot; sp++){
+      for(Int_t sp=0; sp<nSpeciesPlot; sp++) {
 				c1->cd(sp+1)->SetLogx(useLogX[mode]);
 
 				TString strPlotTitle(Form("%s, #it{p}_{T}^{jet, ch} = %d-%d GeV/#it{c}", strTitSp[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
@@ -534,8 +535,8 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
 					setHistoStyleColor(fh1SysVariationGenPrim[index(i, mode, sp) * nSysVariations + sysVariationMode],kTRUE, sysVariationModesColor[sysVariationMode]);
 					fh1SysVariationGenPrim[index(i, mode, sp) * nSysVariations + sysVariationMode]->DrawCopy("same");
 				}
-				fh1SpectraGenericFastSimulation[index(i, mode, sp)]->DrawCopy("same"); //redraw on top   
-						
+				fh1SpectraGenericFastSimulation[index(i, mode, sp)]->DrawCopy("same"); //redraw on top  
+   						
 				if(sp==0){
 					leg1->AddEntry(fh1SpectraGenericFastSimulation[index(i, mode, sp)],"Reference, gen level","P");
 					for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
@@ -571,6 +572,10 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
 				corrFacGenericFastSimulation[index(i, mode, sp)]->DrawCopy();  
 				systematicVariationCorrFactor[index(i, mode, sp)]->DrawCopy("same,E2");
 				corrFacOriginalMC[index(i, mode, sp)]->DrawCopy("same");
+
+        for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;sysVariationMode++) {
+          corrFactorsVariations[index(i, mode, sp) * nSysVariations + sysVariationMode]->DrawCopy("same");
+        }
 				
 				if(sp==0){
 					leg2->AddEntry(corrFacOriginalMC[index(i, mode, sp)], "Full simulation", "P");

@@ -1993,6 +1993,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   // Take binning from pion yield (binning for all species the same) and create a new AliCFContainer with this new binning
   
   // NOTE: Only the binning of the considered observable matters!
+  // TODO: Looks like there is no difference. Simplify?
   TAxis* axis = 0x0;
   TArrayD* binsNew = 0x0;
   
@@ -2069,6 +2070,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   const Int_t nEffDims = data->GetNVar();
   Int_t nEffBins[nEffDims];
   
+  // TODO : Simplify
   for (Int_t iDim = 0; iDim < nEffDims; iDim++) {
     if (iDim == iPt && iObs == kTrackPt)
       nEffBins[iDim] = axis->GetNbins();
@@ -2482,6 +2484,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TH1D* hPiFracInMuPi = 0x0;
   TH1D* hPiFracInMuPiStrangeScale = 0x0;
   extractMuonCorrectionFactor(dataRebinned, obsString[iObs], &hPiFracInMuPi, &hPiFracInMuPiStrangeScale);
+  // TODO: Check, looks like nothing happens because both are 0x0
   
   // Secondary correction
   AliCFEffGrid* sec = new AliCFEffGrid("sec", "Secondary Contamination", *dataRebinned);
@@ -3067,6 +3070,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
         
         for (Int_t i = 1; i <= hEfficiencySys[species]->GetNbinsX(); i++) {
           // Set rel. errors for eff and res (none of these errors for onlyMultDep, only efficiency for the merging)
+          // TODO: Check. Looks like Errors for eff are not given for merging, while res are - in contrast to the given above
           hMCRelSysErrorEff_eff[species]->SetBinContent(i, (sysErrorTypeMC == kErrorsOnlyMultDep || sysErrorTypeMC == kErrorsForMerging ||
                                                             sysErrorTypeMC == kErrorsForMergingOnlyMultDep || sysErrorTypeMC == kErrorsForMergingWithoutMultDep) 
                                                            ? 0. : relMCSysErrEffInclusive);
