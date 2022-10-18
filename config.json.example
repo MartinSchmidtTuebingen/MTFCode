@@ -171,6 +171,7 @@
         }
     },
     "fastSimulation": {
+        "fastEffFileRemotePath":"alien:///alice/cern.ch/user/s/shortcutname",
         "parameters": {
             "electron": {
                 "neg": [

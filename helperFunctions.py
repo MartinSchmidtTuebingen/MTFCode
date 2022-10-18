@@ -184,7 +184,7 @@ def fitFastSimulationFactors(config, fastSimulationConfig):
         'canvasName': "cEfficiencies"
     }
     callRootMacro("GetCanvasOutOfFile", arguments, True, True)
-    decision = input("Now press N/<AnyKey> to answer if the fit fits! If you press N, make certain you have already changed the config.json")
+    decision = input("Now press N/<AnyKey> to answer if the fit fits! If you press N, make certain you have already changed the config.json. For Y, the result file file will be uploaded to alien.")
     if decision.lower() == "n":
         #### Reload config file ###
         analysisFolder = config["analysisFolder"]
@@ -201,6 +201,7 @@ def fitFastSimulationFactors(config, fastSimulationConfig):
         config["pathMCsysErrors"] = mcSysErrorPath
         fitFastSimulationFactors(config, fastSimulationConfig)
     else:
+        subprocess.call(split("alien.py cp file://" + outputFile + " " + fastSimulationConfig["fastEffFileRemotePath"]))
         return
     
     
