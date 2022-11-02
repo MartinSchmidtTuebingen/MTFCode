@@ -58,6 +58,7 @@ Explanation of config.json:
         "modesJetsString": "Pt;Z"
     },
     "systematics": {
+        "systematicFile": Path to file containing the systematic graphs,
         "nameOfSystematic": {
             "sourcePath": Remote source path with pattern
             "savePath": Save path

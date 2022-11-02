@@ -68,6 +68,7 @@
         "modesJetsString": "Pt;Z"
     },
     "systematics": {
+        "systematicFile": "/home/martin/Documents/Promotion/alice-tpc-notes/calibration/TPCSplineCreationFramework_Skimmed/Spline_OfflineFramework/LHC13c_pass5/Iteration5/SplineSystematics.root",
         "wo_prePID": {
             "sourcePath": "2017_03_01_LHC13c.pass4_CorrectSplines_Reference/*reg1*noMuons_centrality*.root",
             "savePath": "Data/Systematics/wo_prePID",
