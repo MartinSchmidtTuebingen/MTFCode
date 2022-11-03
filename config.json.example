@@ -134,11 +134,11 @@
             "inputs": [
                 {
                     "pattern": "maschmid_PID_%s_PureGauss_SystematicsSplinesDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
-                    "histTitle": "Splines -0.6% - -1.4% for #beta#gamma > 50; -0.3% for #beta#gamma < 50%"
+                    "histTitle": "Splines -1.4% for #beta#gamma > 50; -0.3% for #beta#gamma < 50"
                 },
                 {
                     "pattern": "maschmid_PID_%s_PureGauss_SystematicsSplinesUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
-                    "histTitle": "Splines +0.8% - +2% for #beta#gamma > 50; +0.3% for #beta#gamma < 50%"
+                    "histTitle": "Splines +2% for #beta#gamma > 50; +0.3% for #beta#gamma < 50"
                 }
             ]
         },

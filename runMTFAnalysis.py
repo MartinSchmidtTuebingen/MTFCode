@@ -29,13 +29,15 @@ def main():
   
     download = args.download != 0
     
+    configFile = analysisFolder + "config.json"
+    
     #### Load config file ###
-    with open(analysisFolder + "config.json", "r") as configFile:
-        config = json.loads(configFile.read())
+    with open(configFile, "r") as configFile:
+        completeConfig = json.loads(configFile.read())
         
-    systematics = config["systematics"]
-    fastSimulationConfig = config["fastSimulation"]
-    config = config["config"]
+    systematics = completeConfig["systematics"]
+    fastSimulationConfig = completeConfig["fastSimulation"]
+    config = completeConfig["config"]
     config["analysisFolder"] = analysisFolder
     
     #### Make result folders ###      
@@ -69,6 +71,13 @@ def main():
         tasksToPerform = defaultTasksList[defaultTasksList.index(tasksToPerform[0]):]
         
     print("Perform tasks: " + str(tasksToPerform))
+    
+    if 'createsys' in tasksToPerform:
+        systematicValues = produceSystematicValues(systematics['systematicFile'])
+        decision = input("Update config.json? Y/N")
+        if decision == "Y":
+            updateSystematicValuesInConfig(systematicValues, completeConfig, configFile)
+        exit()
     
     if 'fitsim' in tasksToPerform:
         fitFastSimulationFactors(config, fastSimulationConfig)
