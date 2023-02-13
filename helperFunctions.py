@@ -48,7 +48,7 @@ def callRootMacro(name, arguments, doNotQuit = False, doNotRunInBackground = Fal
 
 def produceSystematicValues(systematicsFile):
     systematicValues = {}
-    systematicValues['Splines'] = [[],[]]
+    systematicValues['Splines'] = {"down":[],"up":[]}
     print("Low pT spline systematics")
     arguments = {
         'fileName': systematicsFile,
@@ -57,8 +57,8 @@ def produceSystematicValues(systematicsFile):
     callRootMacro("GetCanvasOutOfFile", arguments, True, True)
     deviationUp = float(input("Check the boundary of the data. Ignore the rises of TPC+TOF kaons and protons above 1.8 GeV. Ignore the values for 4 GeV or higher with high error bars. Deviation up and down should be set to the same value (though not required). Now enter deviation up"))
     deviationDown = abs(float(input("Now enter deviation down")))
-    systematicValues['Splines'][0].append(deviationDown)
-    systematicValues['Splines'][1].append(deviationUp)
+    systematicValues['Splines']["down"].append(deviationDown)
+    systematicValues['Splines']["up"].append(deviationUp)
     
     print("High pT spline systematics. Taken from graphs")
     arguments = {
@@ -73,11 +73,11 @@ def produceSystematicValues(systematicsFile):
     callRootMacro("GetCanvasOutOfFile", arguments, True, True)
     deviationUp = float(input("Determine the deviation up for values of high betaGamma. Enter it now"))
     deviationDown = abs(float(input("Now enter deviation down")))
-    systematicValues['Splines'][0].append(deviationDown)
-    systematicValues['Splines'][1].append(deviationUp)
+    systematicValues['Splines']["down"].append(deviationDown)
+    systematicValues['Splines']["up"].append(deviationUp)
     
     print("Low pT eta systematics")
-    systematicValues['Eta'] = [[],[]]
+    systematicValues['Eta'] = {"down":[],"up":[]}
     arguments = {
         'fileName': systematicsFile,
         'canvasName': "cEtaSystematicslowP"
@@ -85,8 +85,8 @@ def produceSystematicValues(systematicsFile):
     callRootMacro("GetCanvasOutOfFile", arguments, True, True)
     deviationUp = float(input("Check the boundary of the data. Deviation up and down should be set to the same value (though not required). Now enter deviation up"))
     deviationDown = abs(float(input("Now enter deviation down")))
-    systematicValues['Eta'][0].append(deviationDown )
-    systematicValues['Eta'][1].append(deviationUp)
+    systematicValues['Eta']["down"].append(deviationDown )
+    systematicValues['Eta']["up"].append(deviationUp)
     
     print("High pT eta systematics")
     arguments = {
@@ -96,11 +96,11 @@ def produceSystematicValues(systematicsFile):
     callRootMacro("GetCanvasOutOfFile", arguments, True, True)
     deviationUp = float(input("Check the boundary of the data. Deviation up and down should be set to the same value (though not required). Now enter deviation up"))
     deviationDown = abs(float(input("Now enter deviation down")))
-    systematicValues['Eta'][0].append(deviationDown) 
-    systematicValues['Eta'][1].append(deviationUp)
+    systematicValues['Eta']["down"].append(deviationDown) 
+    systematicValues['Eta']["up"].append(deviationUp)
     
     print("Resolution systematics")
-    systematicValues['Sigma'] = [[],[]]
+    systematicValues['Sigma'] = {"down":[],"up":[]}
     arguments = {
         'fileName': systematicsFile,
         'canvasName': "cResolutionSystematics"
@@ -108,11 +108,11 @@ def produceSystematicValues(systematicsFile):
     callRootMacro("GetCanvasOutOfFile", arguments, True, True)
     deviationUp = float(input("Check the boundary of the data. Deviation up and down should be set to the same value (though not required). Now enter deviation up"))
     deviationDown = abs(float(input("Now enter deviation down")))
-    systematicValues['Sigma'][0].append(deviationDown)
-    systematicValues['Sigma'][1].append(deviationUp)
+    systematicValues['Sigma']["down"].append(deviationDown)
+    systematicValues['Sigma']["up"].append(deviationUp)
     
     print("Multiplicity systematics")
-    systematicValues['Mult'] = [[],[]]
+    systematicValues['Mult'] = {"down":[],"up":[]}
     arguments = {
         'fileName': systematicsFile,
         'canvasName': "cMultCorrectionAccuracy"
@@ -120,23 +120,29 @@ def produceSystematicValues(systematicsFile):
     callRootMacro("GetCanvasOutOfFile", arguments, True, True)
     deviationUp = float(input("Check the boundary of the data. Deviation up and down should be set to the same value (though not required). Ignore large outliers. Now enter deviation up"))
     deviationDown = abs(float(input("Now enter deviation down")))
-    systematicValues['Mult'][0].append(deviationDown)   
-    systematicValues['Mult'][1].append(deviationUp)
+    systematicValues['Mult']["down"].append(deviationDown)   
+    systematicValues['Mult']["up"].append(deviationUp)
     
     print(systematicValues)
     return systematicValues
   
-def updateSystematicValuesInConfig(systematicValues, completeConfig, configFile):
+  
+def updateSystematicValuesInConfig(systematicValues, configFileName):
+    with open(configFileName, "r") as configFile:
+        completeConfig = json.loads(configFile.read())
+        
     for systematicName,values in completeConfig["systematics"].items():
         if systematicName not in systematicValues:
             continue
         
         singleSystematicValues = systematicValues[systematicName]
-        for index,values in enumerate(singleSystematicValues):
-            completeConfig["systematics"][systematicName]["inputs"][index]["values"]=values
+        completeConfig["systematics"][systematicName]["values"] = singleSystematicValues
             
-    f = open(configFile)
-    f.write(json.dumps(completeConfig, indent=4))
+    configAsJson = json.dumps(completeConfig, indent=4)
+    
+    with open(configFileName, "w") as configFile:
+        configFile.write(configAsJson)
+        
 
 def runSystematicProcess(systematicsToProcess, systematics, config, jetString, systematicDay):
     analysisFolder = config['analysisFolder']

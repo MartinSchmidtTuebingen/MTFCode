@@ -29,10 +29,10 @@ def main():
   
     download = args.download != 0
     
-    configFile = analysisFolder + "config.json"
+    configFileName = analysisFolder + "config.json"
     
     #### Load config file ###
-    with open(configFile, "r") as configFile:
+    with open(configFileName, "r") as configFile:
         completeConfig = json.loads(configFile.read())
         
     systematics = completeConfig["systematics"]
@@ -75,10 +75,11 @@ def main():
     if 'createsys' in tasksToPerform:
         systematicValues = produceSystematicValues(systematics['systematicFile'])
         decision = input("Update config.json? Y/N")
-        if decision == "Y":
-            updateSystematicValuesInConfig(systematicValues, completeConfig, configFile)
+        if decision.lower() == "y":
+            updateSystematicValuesInConfig(systematicValues, configFileName)
+            print("Please update axes labelling manually")
         exit()
-    
+        
     if 'fitsim' in tasksToPerform:
         fitFastSimulationFactors(config, fastSimulationConfig)
         exit()
