@@ -11,7 +11,7 @@ elif [[ $1 = "init" ]];then
 elif [[ $1 = "create" ]];then
   analysisName=$2
   analysisFolder=$folder/$analysisName
-  if [ -d $sanalysisFolder ];then
+  if [ -d "$sanalysisFolder" ];then
     echo "Analysis already exists"
     exit
   fi
@@ -20,6 +20,7 @@ elif [[ $1 = "create" ]];then
   cp $folder/env.sh $analysisFolder/env.sh.base
   cp $folder/config.json.example $analysisFolder/config.json
   echo "Created. Rename env.sh.base in $analysisFolder to env.sh and adjust loading environment, if this analysis should run with another AliPhysics instance."
+  exit
 fi
   
 analysisName=$1
