@@ -7,6 +7,13 @@ Usage:
 - Run "./runAnalysis.sh <PROJECT_NAME>" to run a specific analysis
 - Run "./runAnalysis.sh <PROJECT_NAME> -h" to get possible parameters
 
+Systematics:
+- Run "./runAnalysis <PROJECT_NAME> -t createsys" to create systematics from given systematic file. Can be saved directly to config
+
+Downloading train file:
+- Run "./runAnalysis.sh <PROJECT_NAME> -g" to download files specified in pidAnalysesList
+- Run "./runAnalysis.sh <PROJECT_NAME> -p" to upload files to your analysis cluster and start the PID analysis
+
 Fast simulation:
 - Download MC data (inclusive and jet) in mcPath set in json (not yet automatic)
 - Run "./runAnalysis <PROJECT_NAME> -t fitsim" to fit the fast simulation parameters. Check if the outcome (fastSimulationParameters* in "mcData" looks good. If not, you might have to change the base fast simulation parameters in config.json (TODO: Automatize this checking checking procedure)
@@ -18,6 +25,7 @@ Fast simulation:
 Explanation of config.json:
 {
     "config": {
+        "remoteHost": Host name of pid MTF analysis cluster
         "remoteBasePath": Base Path where the output of all your MTF analysis is stored
         "referenceRemotePath": Reference data, from remoteBasePath. Use directories or patterns (or combination)
         "referenceShape": Shape of reference data (PureGauss/Asymmetric Shape)
@@ -55,7 +63,18 @@ Explanation of config.json:
         "centString": "0;100;60;100;0;10",
         "jetPtString": "05;10;10;15;15;20;20;30",
         "modesInclusiveString": "Pt",
-        "modesJetsString": "Pt;Z"
+        "modesJetsString": "Pt;Z",
+        "pidAnalysesList": [
+            {
+                "isActive":Will be used,
+                "trainName":Name of analysis train,
+                "dirFileName":name of DirectoryFile in AnalysisResults where this analysis is stored,
+                "analysisDirName":directory name on pid analysis cluster after base path,
+                "jobIdentifier":identifier for the log (centralities, jetPt and mode will be added),
+                "isJet":Is it a jet analysis,
+                "centralities":List, if given overwrites global settings
+            }
+        ]
     },
     "systematics": {
         "systematicFile": Path to file containing the systematic graphs,

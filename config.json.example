@@ -1,12 +1,13 @@
 {
     "config": {
-        "remoteBasePath": "gsiVirgo:///lustre/alice/users/maschmid/analysis/data/",
-        "referenceRemotePath": "2017_03_01_LHC13c.pass4_CorrectSplines_Reference/*results*reg1*idSpectra*.root",
-        "referenceShape": "PureGauss",
-        "doInclusive": 0,
+        "remoteHost":"gsiVirgo",
+        "remoteBasePath": "/lustre/alice/users/maschmid/analysis/data/",
+        "referenceRemotePath": "2023_04_08_LHC13c.pass5_ConvGauss/*results*reg1*idSpectra*.root",
+        "referenceShape": "ConvGauss",
+        "doInclusive": 1,
         "doJets": 1,
         "doUE": 1,
-        "fileNamePattern": "maschmid_PID_%s_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+        "fileNamePattern": "PWGJE_taskMTFPID_%s_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
         "chargeString": "",
         "charge": 0,
         "nSigma": 0,
@@ -14,7 +15,7 @@
         "pathMCsysErrors": "Data/MCData/MCSystematicsFiles",
         "correctGeantFluka": "kFALSE",
         "newGeantFluka": "kFALSE",
-        "mcGenerator":"kDPMJET",
+        "mcGenerator": "kDPMJET",
         "scaleStrangeness": "kFALSE",
         "applyMuonCorrection": "kTRUE",
         "constCorrAboveThreshold": 0,
@@ -65,114 +66,192 @@
         "centString": "0;100;60;100;0;10",
         "jetPtString": "05;10;10;15;15;20;20;30",
         "modesInclusiveString": "Pt",
-        "modesJetsString": "Pt;Z"
+        "modesJetsString": "Pt;Z",
+        "pidAnalysesList": [
+            {
+                "isActive":false,
+                "trainName":"/alice/cern.ch/user/a/alitrain/PWGJE/Jets_EMC_pPb/1720_20230320-0132/merge",
+                "dirFileName":"PWGJE_taskMTFPID_Jets_Inclusive",
+                "analysisDirName":"2023_04_08_LHC13c.pass5_ConvGauss",
+                "jobIdentifier":"inclusive_cg",
+                "isJet":false,
+                "centralities":["0_100"]
+            },
+            {
+                "isActive":true,
+                "trainName":"/alice/cern.ch/user/a/alitrain/PWGJE/Jets_EMC_pPb/1719_20230313-1749/merge",
+                "dirFileName":"PWGJE_taskMTFPID_Jets",
+                "analysisDirName":"2023_04_08_LHC13c.pass5_ConvGauss",
+                "jobIdentifier":"jets_cg",
+                "isJet":true
+            },
+            {
+                "isActive":false,
+                "trainName":"/alice/cern.ch/user/a/alitrain/PWGJE/Jets_EMC_pPb/1720_20230320-0132/merge",
+                "dirFileName":"PWGJE_taskMTFPID_Jets_Inclusive_PureGauss",
+                "analysisDirName":"2023_04_08_LHC13c.pass5_PureGauss",
+                "jobIdentifier":"inclusive_pg",
+                "isJet":false
+            },
+            {
+                "isActive":true,
+                "trainName":"/alice/cern.ch/user/a/alitrain/PWGJE/Jets_EMC_pPb/1719_20230313-1749/merge",
+                "dirFileName":"PWGJE_taskMTFPID_Jets_PureGauss",
+                "analysisDirName":"2023_04_08_LHC13c.pass5_PureGauss",
+                "jobIdentifier":"jets_pg",
+                "isJet":true
+            }
+        ]
     },
     "systematics": {
-        "systematicFile": "/home/martin/Documents/Promotion/alice-tpc-notes/calibration/TPCSplineCreationFramework_Skimmed/Spline_OfflineFramework/LHC13c_pass5/Iteration5/SplineSystematics.root",
+        "systematicFile": "/home/martin/Documents/Promotion/alice-tpc-notes/calibration/TPCSplineCreationFramework_Skimmed/Spline_OfflineFramework/LHC13c_pass5/Iteration8/SplineSystematics.root",
         "wo_prePID": {
+            "isActive":false,
             "sourcePath": "2017_03_01_LHC13c.pass4_CorrectSplines_Reference/*reg1*noMuons_centrality*.root",
             "savePath": "Data/Systematics/wo_prePID",
             "outputFilePattern": "outputSystematics_%s_PureGauss_%s_PrePID_%s%s",
             "refHistTitle": "PID combined (default)",
             "inputs": [
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons%s%s.root",
                     "histTitle": "No PID"
                 }
             ]
         },
         "Shape": {
-            "sourcePath": "2017_03_08_LHC13c.pass4_CorrectSplines_Systematics_ShapeAndUEMethod/*results*reg1*.root",
+            "isActive":true,
+            "sourcePath": "2023_04_08_LHC13c.pass5_ConvGauss/*Inclusive*results*reg1*.root",
             "excludePattern": "*UE*",
             "savePath": "Data/Systematics/Shape",
-            "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Shape_%s%s",
-            "refHistTitle": "Pure Gauss (default)",
+            "outputFilePattern": "outputSystematics_%s_%s_Shape_%s%s",
+            "refHistTitle": "Convoluted Gauss",
             "inputs": [
                 {
-                    "pattern": "maschmid_PID_%s_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "Asymmetric shape"
                 }
             ]
         },
         "Eta": {
+            "isActive":false,
             "sourcePath": "2017_03_08_LHC13c.pass4_CorrectSplines_SystematicsEta/*results*reg1*.root",
             "savePath": "Data/Systematics/Eta",
             "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Eta_%s%s",
             "refHistTitle": "Standard #eta map",
             "inputs": [
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsEtaDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsEtaDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "#eta correction - 1.5%, p > 0.45 GeV/c; - %3, p < 0.45 GeV/c"
                 },
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsEtaUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsEtaUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "#eta correction + 1.5%, p > 0.45 GeV/c; + %3, p < 0.45 GeV/c"
                 }
-            ]
+            ],
+            "values": {
+                "down": [
+                    0.03,
+                    0.005
+                ],
+                "up": [
+                    0.03,
+                    0.01
+                ]
+            }
         },
         "Sigma": {
+            "isActive":false,
             "sourcePath": "2017_03_08_LHC13c.pass4_CorrectSplines_SystematicsSigma/*results*reg1*.root",
             "savePath": "Data/Systematics/Sigma",
             "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Sigma_%s%s",
             "refHistTitle": "Standard #sigma map",
             "inputs": [
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsSigmaDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsSigmaDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "#sigma correction - 3%"
                 },
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsSigmaUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsSigmaUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "#sigma correction + 3%"
                 }
-            ]
+            ],
+            "values": {
+                "down": [
+                    0.04
+                ],
+                "up": [
+                    0.04
+                ]
+            }
         },
         "Splines": {
+            "isActive":false,
             "sourcePath": "2017_03_08_LHC13c.pass4_CorrectSplines_SystematicsSplines/*results*reg1*.root",
             "savePath": "Data/Systematics/Splines",
             "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Splines_%s%s",
             "refHistTitle": "Standard splines",
             "inputs": [
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsSplinesDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsSplinesDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "Splines -1.4% for #beta#gamma > 50; -0.3% for #beta#gamma < 50"
                 },
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsSplinesUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsSplinesUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "Splines +2% for #beta#gamma > 50; +0.3% for #beta#gamma < 50"
                 }
-            ]
+            ],
+            "values": {
+                "down": [
+                    0.004,
+                    0.01
+                ],
+                "up": [
+                    0.004,
+                    0.01
+                ]
+            }
         },
         "Mult": {
+            "isActive":false,
             "sourcePath": "2017_03_08_LHC13c.pass4_CorrectSplines_SystematicsMult/*results*reg1*.root",
             "savePath": "Data/Systematics/Mult",
             "outputFilePattern": "outputSystematics_%s_PureGauss_%s_Mult_%s%s",
             "refHistTitle": "Standard Multiplicity correction",
             "inputs": [
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsMultDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsMultDown_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "Splines + 0.2%"
                 },
                 {
-                    "pattern": "maschmid_PID_%s_PureGauss_SystematicsMultUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
-                    "histTitle": "Splines – 0.2%"
+                    "pattern": "PWGJE_taskMTFPID_%s_PureGauss_SystematicsMultUp_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "histTitle": "Splines \u2013 0.2%"
                 }
-            ]
+            ],
+            "values": {
+                "down": [
+                    0.01
+                ],
+                "up": [
+                    0.01
+                ]
+            }
         },
         "UEMethod": {
+            "isActive":false,
             "sourcePath": "2017_03_08_LHC13c.pass4_CorrectSplines_Systematics_ShapeAndUEMethod/*RC*result*reg1*.root",
             "savePath": "Data/Systematics/UEMethod",
             "outputFilePattern": "outputSystematics_%s_PureGauss_%s_UEMethod_%s%s",
             "refHistTitle": "Perpendicular Cone (Default)",
             "inputs": [
                 {
-                    "pattern": "maschmid_PID_%s_RC_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
+                    "pattern": "PWGJE_taskMTFPID_%s_RC_PureGauss_results_LLFit__%s_2_reg1_regFac1.00_noMuons_idSpectra%s%s.root",
                     "histTitle": "Random Cone"
                 }
             ]
         }
     },
     "fastSimulation": {
-        "fastEffFileRemotePath":"alien:///alice/cern.ch/user/s/shortcutname",
+        "fastEffFileRemotePath": "alien:///alice/cern.ch/user/s/shortcutname",
         "parameters": {
             "electron": {
                 "neg": [
@@ -304,37 +383,55 @@
             }
         },
         "genericFastSimulation": {
-            "folder":"Eff100_Res100"
+            "folder": "Eff100_Res100"
         },
         "variations": {
             "efficiency": {
                 "short": "Eff",
-                "active":true,
+                "active": true,
                 "legendEntryName": "Efficiency +/- 5%",
                 "simpleSysErrorCalculation": "1",
-                "inputs":[
-                    {"folder": "Eff095_Res100", "name": "Eff095"},
-                    {"folder": "Eff105_Res100", "name": "Eff105"}
+                "inputs": [
+                    {
+                        "folder": "Eff095_Res100",
+                        "name": "Eff095"
+                    },
+                    {
+                        "folder": "Eff105_Res100",
+                        "name": "Eff105"
+                    }
                 ]
             },
             "resolution": {
                 "short": "Res",
-                "active":true,
+                "active": true,
                 "legendEntryName": "Resolution +/- 20%",
                 "simpleSysErrorCalculation": "1",
-                "inputs":[
-                    {"folder": "Eff100_Res080", "name": "Res080"},
-                    {"folder": "Eff100_Res120", "name": "Res120"}
+                "inputs": [
+                    {
+                        "folder": "Eff100_Res080",
+                        "name": "Res080"
+                    },
+                    {
+                        "folder": "Eff100_Res120",
+                        "name": "Res120"
+                    }
                 ]
             },
             "lowpt": {
                 "short": "BbB",
-                "active":true,
+                "active": true,
                 "legendEntryName": "Low-pt enhanced/depleted",
                 "simpleSysErrorCalculation": "0",
-                "inputs":[
-                    {"folder": "LowPtEnhancement", "name": "LowPtEnhancement"},
-                    {"folder": "LowPtDepletion", "name": "LowPtDepletion"}
+                "inputs": [
+                    {
+                        "folder": "LowPtEnhancement",
+                        "name": "LowPtEnhancement"
+                    },
+                    {
+                        "folder": "LowPtDepletion",
+                        "name": "LowPtDepletion"
+                    }
                 ]
             }
         }

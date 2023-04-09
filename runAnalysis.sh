@@ -29,24 +29,42 @@ analysisFolder=$folder/$analysisName
 shift;
 
 download=0
+gridDownload=0
+doPIDAnalysis=0
 day=$(date +%Y_%m_%d)
 tasks=""
 continueParameter=""
 helpParameter=""
 
-while getopts "hd:s:t:c:" option; do
+while getopts "hdgps:t:c:" option; do
   case $option in
     h) helpParameter="-h";;
-    d) download=$OPTARG;;
+    d) download=1;;
+    g) gridDownload=1;;
+    p) doPIDAnalysis=1;;
     s) day=$OPTARG;;
     t) tasks="-t $OPTARG";;
     c) continueParameter="-c $OPTARG"
   esac
 done
 
+if [[ $gridDownload != "0" ]];then
+  echo "Download grid data"
+  source $folder/env.sh
+  python3 $folder/runMTFAnalysis.py -f $analysisFolder -g 1
+  exit
+fi
+
+if [[ $doPIDAnalysis != "0" ]];then
+  echo "Do PID Analysis"
+  python3 $folder/runMTFAnalysis.py -f $analysisFolder -p 1
+  exit
+fi
+
 if [[ $download != "0" ]];then
   echo "Sync data"
   python3 $folder/runMTFAnalysis.py -f $analysisFolder -d 1
+  exit
 fi
 
 if [ -e $analysisFolder/env.sh ];then

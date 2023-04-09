@@ -18,6 +18,8 @@ def main():
     parser.add_argument('-f','--folder', type=str, help='Analysis Folder', required=True)
     parser.add_argument('-s','--systematic', type=str, help='Day of systematics', required=False)
     parser.add_argument('-d','--download', type=int, help='Download data', required=False, default=0)
+    parser.add_argument('-g','--gridDownload', type=int, help='Download train data from grid', required=False, default=0)
+    parser.add_argument('-p','--doPIDAnalysis', type=int, help='Upload data to farm and start analysis', required=False, default=0)
     parser.add_argument('-t','--tasks', type=str, help='Choose tasks to perform:Sys|Eff', required=False, default=defaultTasks) 
     parser.add_argument('-c','--continueRun', type=int, help='Continue after task to perform', required=False, default=0)
     
@@ -28,6 +30,8 @@ def main():
     print("Folder:" + analysisFolder)
   
     download = args.download != 0
+    gridDownload = args.gridDownload != 0
+    doPIDAnalysis = args.doPIDAnalysis != 0
     
     configFileName = analysisFolder + "config.json"
     
@@ -51,18 +55,82 @@ def main():
             config[mcPathName] = mcPath
         os.makedirs(mcPath, exist_ok = True)
         
+    if gridDownload:
+        trainFilesDir = config["analysisFolder"] + "trainFiles"
+        os.makedirs(trainFilesDir, exist_ok = True)
+        downloadedFiles = set(())
+        #### Download data from analysis trains ###
+        for pidAnalysisInformation in config["pidAnalysesList"]:
+            if not pidAnalysisInformation["isActive"]:
+                continue
+            
+            trainName = pidAnalysisInformation["trainName"]
+            modTrainName = trainName.replace("/alice/cern.ch/user/a/alitrain/PWGJE/","").replace("/merge","").replace("/","_")
+            saveFileName = f"{trainFilesDir}/AnalysisResults_{modTrainName}.root"
+            if modTrainName not in downloadedFiles:
+                downloadedFiles.add(modTrainName)
+                callScript(f"downloadTrainData.sh {trainName}/AnalysisResults.root {saveFileName}")
+                
+            dirToExtract = pidAnalysisInformation["dirFileName"]
+            rootArguments = {
+                "inputFile":saveFileName,
+                "dirToExtract": dirToExtract
+            }
+            pidFileName=trainFilesDir + "/" + dirToExtract + ".root"
+            
+            callRootMacro("extractDirFromFile", rootArguments)
+                
+        print("Now start script in new shell with -p as argument for the analysis")        
+        exit()
+        
+    if doPIDAnalysis:
+        trainFilesDir = config["analysisFolder"] + "trainFiles"
+        for pidAnalysisInformation in config["pidAnalysesList"]:
+            if not pidAnalysisInformation["isActive"]:
+                continue
+            
+            dirToExtract = pidAnalysisInformation["dirFileName"]
+            pidFileName=trainFilesDir + "/" + dirToExtract + ".root"
+            
+            remoteHost = config["remoteHost"]
+            remoteBasePath = config["remoteBasePath"]
+            analysisDirName = pidAnalysisInformation["analysisDirName"]
+            jobIdentifier = pidAnalysisInformation["jobIdentifier"]
+            
+            centralities = pidAnalysisInformation.get("centralities", config["centralities"])
+            
+            centString = ";".join(centralities)
+            jetString = "-1_-1"
+            modeString = "pt"
+            if pidAnalysisInformation["isJet"]:
+                jetString = ";".join(config["jetPts"])
+                modeString = ";".join(config["modesJets"])
+            
+            callScript(f"steerPIDAnalysis.sh {remoteHost} {remoteBasePath} {analysisDirName} {pidFileName} {jobIdentifier} {centString} {jetString} {modeString}") 
+            
+        exit()
+        
     if download:
-      #### Download data ###
-      ### Reference data
-      print("Download data:")
-      downloadData(config["remoteBasePath"] + config["referenceRemotePath"], config["analysisFolder"] + 'Data')
-      
-      ### Systematics
-      for name,systematic in systematics.items():
-          downloadData(config["remoteBasePath"] + systematic["sourcePath"], config["analysisFolder"] + systematic["savePath"], systematic["excludePattern"] if "excludePattern" in systematic else "")
-          
-      # Now we have to exit because rsync does not work with ali environment. This is caught in the call script runAnalysis.sh by calling this python script again
-      exit()
+        #### Download data ###
+        ### Reference data
+        print("Download data:")
+        downloadData(config["remoteHost"] + "://" + config["remoteBasePath"] + config["referenceRemotePath"], config["analysisFolder"] + 'Data')
+        
+        ## Systematics
+        for name,systematic in systematics.items():
+            try:
+                sourcePath = systematic["sourcePath"]
+                savePath = systematic["savePath"]
+            
+                if not systematic.get("isActive",True):
+                    continue
+                
+                downloadData(config["remoteHost"] + "://" + config["remoteBasePath"] + sourcePath, config["analysisFolder"] + savePath, systematic.get("excludePattern", ""))
+            except (TypeError, AttributeError):
+                continue
+            
+        # Now we have to exit because rsync does not work with ali environment. This is caught in the call script runAnalysis.sh by calling this python script again
+        exit()
       
     defaultTasksList = defaultTasks.split(',')
     tasksToPerform = args.tasks.lower().split(',')

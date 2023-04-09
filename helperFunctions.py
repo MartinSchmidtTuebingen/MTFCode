@@ -44,7 +44,11 @@ def callRootMacro(name, arguments, doNotQuit = False, doNotRunInBackground = Fal
     if not doNotQuit:
       cmd += " -q"
       
-    subprocess.call(split(cmd))
+    subprocess.run(split(cmd))
+    
+def callScript(argumentString):
+    argumentString = str(pathlib.Path().resolve()) + "/" + argumentString
+    subprocess.run(split(argumentString))
 
 def produceSystematicValues(systematicsFile):
     systematicValues = {}
