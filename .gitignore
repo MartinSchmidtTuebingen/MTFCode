@@ -1,3 +1,4 @@
 env.sh
 LHC*
 __pycache__
+.vscode
