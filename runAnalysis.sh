@@ -8,6 +8,7 @@ elif [[ $1 = "init" ]];then
   cp $folder/.env.sh.example $folder/env.sh
   chmod 755 $folder/env.sh
   echo "Done"
+  exit
 elif [[ $1 = "create" ]];then
   analysisName=$2
   analysisFolder=$folder/$analysisName
