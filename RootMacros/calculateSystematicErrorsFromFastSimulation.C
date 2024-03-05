@@ -32,7 +32,7 @@ const Int_t nModes = 5;
 const TString modeString[nModes] = {"TrackPt", "Z", "Xi", "R", "jT"};
 Bool_t useModes[nModes] = {kTRUE, kTRUE, kTRUE, kTRUE, kTRUE};
 
-const Bool_t useLogX[nModes] = {kTRUE, kFALSE, kFALSE, kFALSE, kTRUE};
+const Bool_t useLogX[nModes] = {kTRUE, kFALSE, kFALSE, kFALSE, kFALSE};
 const TString xAxeTitles[nModes] = {"#it{p}_{T} (GeV/#it{c})", "#it{z}", "#it{#xi}", "R", "j_{T} (GeV/#it{c})"};
 
 Int_t nJetPtBins = 0;

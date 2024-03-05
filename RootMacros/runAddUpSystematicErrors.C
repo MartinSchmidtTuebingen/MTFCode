@@ -3,19 +3,8 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 
+#include "THnSparseDefinitions.h"
 #include "AddUpSystematicErrors.C"
-
-TString getStringFromTObjStrArray(TObjArray *arr, Int_t position)
-{
-  if (position > arr->GetEntriesFast()-1)
-    return "";
-  
-  TObjString* objStr = (TObjString*)(arr->At(position));
-  if (!objStr)
-    return "";
-  
-  return objStr->GetString();
-}
 
 //_____________________________________________________________________________________________________________________________
 void runAddUpSystematicErrors(

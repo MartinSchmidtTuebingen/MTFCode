@@ -134,8 +134,7 @@ TCanvas* calculateSystematics(TString canvName, TString canvTitle, TH1F** histos
       printf("weightedMean set to ref value, error set to 1.\n\n");
     }
     // The root finder needs some given range. For yields, the error should lie within [0, maxMean - minMean]
-    yerrl[bin] = yerrh[bin] = findSystematicError(numHistos, meansForFit, sigmasForFit, ignoreSigmaErrors, 0, ymaxOriginal - yminOriginal,
-                                                  yminOriginal, ymaxOriginal, &weightedMean);
+    yerrl[bin] = yerrh[bin] = findSystematicError(numHistos, meansForFit, sigmasForFit, ignoreSigmaErrors, 0, ymaxOriginal - yminOriginal, yminOriginal, ymaxOriginal, &weightedMean);
     
     // If the mean should be set to the weighted mean and the bin is in the desired range, do it for the reference histo and the graph!
     // NOTE: The reference histo is only changed for the summary plot, but it is not saved separately!

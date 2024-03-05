@@ -2939,7 +2939,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       fMCsys_shape = TFile::Open(pathNameMCshape.Data(), "READ");
       if (!fMCsys_shape) {
         printf("Failed to load file with MC sys errors: %s\n!", pathNameMCshape.Data());
-//         return -1;
+        return -1;
       }
       
       for (Int_t species = 0; species < AliPID::kSPECIES; species++) {

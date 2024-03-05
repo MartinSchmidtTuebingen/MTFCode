@@ -39,10 +39,19 @@ def main():
     with open(configFileName, "r") as configFile:
         completeConfig = json.loads(configFile.read())
         
-    systematics = completeConfig["systematics"]
+    active_systematics = {}
+    for key,entry in completeConfig["systematics"].items():
+        if type(entry) is not dict or entry["isActive"]:
+            active_systematics[key] = entry
+
     fastSimulationConfig = completeConfig["fastSimulation"]
     config = completeConfig["config"]
     config["analysisFolder"] = analysisFolder
+
+    config['centString'] = ";".join(config["centralities"]).replace("_",";")
+    config['jetPtString'] = ";".join(config["jetPts"]).replace("_",";")
+    config['modesInclusiveString'] = ";".join(config["modesInclusive"])
+    config['modesJetsString'] = ";".join(["Jt" if mode == "jT" else mode for mode in config["modesJets"]])
     
     #### Make result folders ###      
     for key,resFolder in foldersToCreate.items():
@@ -70,6 +79,8 @@ def main():
             if modTrainName not in downloadedFiles:
                 downloadedFiles.add(modTrainName)
                 callScript(f"downloadTrainData.sh {trainName}/AnalysisResults.root {saveFileName}")
+
+            saveFileName = f"{trainFilesDir}/AnalysisResults.root"
                 
             dirToExtract = pidAnalysisInformation["dirFileName"]
             rootArguments = {
@@ -90,7 +101,7 @@ def main():
                 continue
             
             dirToExtract = pidAnalysisInformation["dirFileName"]
-            pidFileName=trainFilesDir + "/" + dirToExtract + ".root"
+            pidFileName = trainFilesDir + "/" + dirToExtract + ".root"
             
             remoteHost = config["remoteHost"]
             remoteBasePath = config["remoteBasePath"]
@@ -99,14 +110,14 @@ def main():
             
             centralities = pidAnalysisInformation.get("centralities", config["centralities"])
             
-            centString = ";".join(centralities)
+            centStringWithUnderscore = ";".join(centralities)
             jetString = "-1_-1"
             modeString = "pt"
             if pidAnalysisInformation["isJet"]:
                 jetString = ";".join(config["jetPts"])
                 modeString = ";".join(config["modesJets"])
             
-            callScript(f"steerPIDAnalysis.sh {remoteHost} {remoteBasePath} {analysisDirName} {pidFileName} {jobIdentifier} {centString} {jetString} {modeString}") 
+            callScript(f"steerPIDAnalysis.sh {remoteHost} {remoteBasePath} {analysisDirName} {pidFileName} {jobIdentifier} {centStringWithUnderscore} {jetString} {modeString}")
             
         exit()
         
@@ -117,7 +128,7 @@ def main():
         downloadData(config["remoteHost"] + "://" + config["remoteBasePath"] + config["referenceRemotePath"], config["analysisFolder"] + 'Data')
         
         ## Systematics
-        for name,systematic in systematics.items():
+        for name,systematic in active_systematics.items():
             try:
                 sourcePath = systematic["sourcePath"]
                 savePath = systematic["savePath"]
@@ -141,7 +152,7 @@ def main():
     print("Perform tasks: " + str(tasksToPerform))
     
     if 'createsys' in tasksToPerform:
-        systematicValues = produceSystematicValues(systematics['systematicFile'])
+        systematicValues = produceSystematicValues(active_systematics['systematicFile'])
         decision = input("Update config.json? Y/N")
         if decision.lower() == "y":
             updateSystematicValuesInConfig(systematicValues, configFileName)
@@ -173,7 +184,7 @@ def main():
         if config['do'+name] == 1:
             print('Do ' + name + ' analysis')
             if 'sys' in tasksToPerform:
-                runSystematicProcess(config['systematics' + name], systematics, config, jetString, systematicDay) 
+                runSystematicProcess(config['systematics' + name], active_systematics, config, jetString, systematicDay)
             if 'eff' in tasksToPerform:
                 runCalculateEfficiency(jetString, config, systematicDay, systematicDay)
                 
@@ -186,6 +197,7 @@ def main():
 def downloadData(remotePattern, targetpath, excludePattern = ""):
     os.makedirs(targetpath, exist_ok = True)
     downloadCommand = "rsync -a --ignore-existing " + remotePattern + " " + targetpath + " --progress"
+    print(downloadCommand)
     if excludePattern != "":
       downloadCommand = downloadCommand + " --exclude=" + excludePattern
     subprocess.call(split(downloadCommand))

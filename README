@@ -60,10 +60,6 @@ Explanation of config.json:
         "jetPts": Used jetPt string
         "modesInclusive": modes for inclusive analysis
         "modesJets": modes for jet analysis
-        "centString": "0;100;60;100;0;10",
-        "jetPtString": "05;10;10;15;15;20;20;30",
-        "modesInclusiveString": "Pt",
-        "modesJetsString": "Pt;Z",
         "pidAnalysesList": [
             {
                 "isActive":Will be used,

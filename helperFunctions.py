@@ -150,8 +150,10 @@ def updateSystematicValuesInConfig(systematicValues, configFileName):
 
 def runSystematicProcess(systematicsToProcess, systematics, config, jetString, systematicDay):
     analysisFolder = config['analysisFolder']
+    # Filter only systematics active in this analysis (inclusive, jet or ue)
     systematicsPropertiesToProcess = dict(filter(
         lambda systematic: systematic[0] in systematicsToProcess, systematics.items()))
+
     modeString = config['modesInclusiveString'] if jetString.find(
         'Inclusive') != -1 else config['modesJetsString']
 

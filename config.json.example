@@ -63,10 +63,6 @@
             "Pt",
             "Z"
         ],
-        "centString": "0;100;60;100;0;10",
-        "jetPtString": "05;10;10;15;15;20;20;30",
-        "modesInclusiveString": "Pt",
-        "modesJetsString": "Pt;Z",
         "pidAnalysesList": [
             {
                 "isActive":false,

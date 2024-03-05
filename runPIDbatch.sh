@@ -15,19 +15,19 @@
 prePID=kTRUE
 if [ "$7" = "0" ]; then
   prePID=kFALSE
-fi 
+fi
 
-mode=0 
+mode=0
 modeString=$( tr '[:upper:]' '[:lower:]' <<<"$8" ) # Convert string to lowercase
 if [ "$modeString" = "pt" ]; then
   mode=0
 elif
   [ "$modeString" = "z" ]; then
   mode=1
-elif  
+elif
   [ "$modeString" = "xi" ]; then
   mode=2
-elif  
+elif
   [ "$modeString" = "r" ]; then
   mode=3
 elif
@@ -36,18 +36,20 @@ elif
 fi
 
 
-lowJetPt=-1  
+lowJetPt=-1
 if [[ ${9} != "" ]]; then
-  lowJetPt=${9}  
-fi 
+  lowJetPt=${9}
+fi
 
-highJetPt=-1  
+highJetPt=-1
 if [[ ${10} != "" ]]; then
-  highJetPt=${10}    
-fi 
+  highJetPt=${10}
+fi
 
 listName=${11}
 
-source .aliEnv
-
-aliroot "runPIDiterative.C(\"$1\", 1.8, 0.15, 50., $4, 2, 0, $prePID, $4, $mode, $2, $5, $6, $lowJetPt, $highJetPt, 1, 1, \"$listName\", kTRUE, kFALSE, 1, 1.0, $3)" -b -q
+singularity shell -B /cvmfs -B /lustre --env sourceFileName=$1,MC=$2,prePID=$prePID,mode=$mode,chargeMode=$2,lowCentrality=$5,highCentrality=$6,lowJetPt=$lowJetPt,highJetPt=$highJetPt,listName=$listName,tofPatching=$3 /lustre/alice/singularity/singularity_base_o2compatibility.sif <<\EOF
+source /cvmfs/alice.cern.ch/etc/login.sh
+alienv enter AliPhysics::vAN-20240212_O2-1
+aliroot "runPIDiterative.C(\"$sourceFileName\", 1.8, 0.15, 50., $MC, 2, 0, $prePID, $MC, $mode, $chargeMode, $lowCentrality, $highCentrality, $lowJetPt, $highJetPt, 1, 1, \"$listName\", kTRUE, kFALSE, 1, 1.0, $tofPatching)" -l -b -q
+EOF
