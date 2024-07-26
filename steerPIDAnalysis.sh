@@ -8,8 +8,9 @@ identifier=$5
 centString=$6
 jetString=$7
 modeString=$8
+prePIDMode=$9
 
 ssh $remoteHost mkdir -p $remoteBasePath/$analysisDir
 scp runPIDAnalysis.sh $remoteHost://$remoteBasePath
 scp $analysisFile $remoteHost://$remoteBasePath/$analysisDir
-ssh $remoteHost $remoteBasePath/runPIDAnalysis.sh $analysisDir $(basename $analysisFile) $identifier \"$centString\" \"$jetString\" \"$modeString\"
+ssh $remoteHost $remoteBasePath/runPIDAnalysis.sh $analysisDir $(basename $analysisFile) $identifier \"$centString\" \"$jetString\" \"$modeString\" \"$prePIDMode\"

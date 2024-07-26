@@ -48,7 +48,7 @@ fi
 
 listName=${11}
 
-singularity shell -B /cvmfs -B /lustre --env sourceFileName=$1,MC=$2,prePID=$prePID,mode=$mode,chargeMode=$2,lowCentrality=$5,highCentrality=$6,lowJetPt=$lowJetPt,highJetPt=$highJetPt,listName=$listName,tofPatching=$3 /lustre/alice/singularity/singularity_base_o2compatibility.sif <<\EOF
+singularity shell -B /cvmfs -B /lustre --env sourceFileName=$1,MC=$2,prePID=$prePID,mode=$mode,chargeMode=$2,lowCentrality=$5,highCentrality=$6,lowJetPt=$lowJetPt,highJetPt=$highJetPt,listName=$listName,tofPatching=$3 /lustre/alice/singularity/singularity_base_aliphysicscompatibility.sif <<\EOF
 source /cvmfs/alice.cern.ch/etc/login.sh
 alienv enter AliPhysics::vAN-20240212_O2-1
 aliroot "runPIDiterative.C(\"$sourceFileName\", 1.8, 0.15, 50., $MC, 2, 0, $prePID, $MC, $mode, $chargeMode, $lowCentrality, $highCentrality, $lowJetPt, $highJetPt, 1, 1, \"$listName\", kTRUE, kFALSE, 1, 1.0, $tofPatching)" -l -b -q

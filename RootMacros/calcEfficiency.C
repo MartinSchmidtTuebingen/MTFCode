@@ -2391,8 +2391,11 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TString listName = pathNameDataMC;
   listName.Replace(0, listName.Last('/') + 1, "");
   listName.ReplaceAll(".root", "");
-    
+
   TObjArray* histList = (TObjArray*)(fDataMC->Get(listName.Data()));
+  if (!histList)
+    histList = (TObjArray*)(fDataMC->Get("PWGJE_taskMTFPID")); // Falllback for inconsistent data
+
   if (!histList && restrictJetPtAxis) {
     std::cout << std::endl;
     std::cout << "Failed to load list \"" << listName.Data() << "\" to obtain num of rec/gen jets!" << std::endl;

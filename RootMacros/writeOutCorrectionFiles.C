@@ -146,14 +146,24 @@ Int_t writeOutCorrectionFiles(TString effFile, TString outFileString, TString je
   listName.ReplaceAll(".root", "");
     
   TObjArray* histList = (TObjArray*)(fDataMC->Get(listName.Data()));
+
+  TH2* hNjetsGen = 0x0;
+  TH2* hNjetsRec = 0x0;
+
   if (!histList) {
     std::cout << std::endl;
     std::cout << "Failed to load list \"" << listName.Data() << "\" to obtain num of rec/gen jets!" << std::endl;
-    return -1;
-  }    
-  
-  TH2* hNjetsGen = (TH2D*)histList->FindObject("fh2FFJetPtGen");
-  TH2* hNjetsRec = (TH2D*)histList->FindObject("fh2FFJetPtRec");
+    std::cout << "Trying to load histograms directly from file" << std::endl;
+    hNjetsGen = (TH2D*)fDataMC->FindObjectAny("fh2FFJetPtGen");
+    hNjetsRec = (TH2D*)fDataMC->FindObjectAny("fh2FFJetPtRec");
+    if (!hNjetsGen || !hNjetsRec) {
+      std::cout << "Histograms not found" << std::endl;
+      return -1;
+    }
+  } else {
+    hNjetsGen = (TH2D*)histList->FindObject("fh2FFJetPtGen");
+    hNjetsRec = (TH2D*)histList->FindObject("fh2FFJetPtRec");
+  }
   
   Int_t lowerCentralityBinLimit = -1;
   Int_t upperCentralityBinLimit = -1;

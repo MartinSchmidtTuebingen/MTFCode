@@ -126,8 +126,12 @@ Int_t createFileForBbBCorrections(TString pathNameEfficiency, TString outfileNam
   TObjArray* histList = (TObjArray*)(fDataMC->Get(listName.Data()));
   if (!histList) {
     std::cout << std::endl;
-    std::cout << "Failed to load list \"" << listName.Data() << "\" to obtain num of rec/gen jets!" << std::endl;
-    return -1;
+    std::cout << "Failed to load list \"" << listName.Data() << "\" to obtain num of rec/gen jets! Retry with standard list name" << std::endl;
+    histList = (TObjArray*)(fDataMC->Get("PWGJE_taskMTFPID"));
+    if (!histList) {
+      std::cout << "Failed to load list with standard list name to obtain num of rec/gen jets! Retry with standard list name" << std::endl;
+      return -1;
+    }
   }    
   
   TH2* hNjetsGen = (TH2D*)histList->FindObject("fh2FFJetPtGen");

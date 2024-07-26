@@ -12,6 +12,11 @@ IFS=";" read -a jetArray <<< $jetString
 modeString=$6
 IFS=";" read -a modeArray <<< $modeString
 
+prePID=1
+if [ "$7" != "" ];then
+  prePID=$7
+fi
+
 submitCMD="sbatch --time=03:59:59 --mem=2048"
 
 currentdir=$(dirname $0)
@@ -40,7 +45,7 @@ do
         logname=$logname"_JetPt_"$lowJetPt"_"$highJetPt"_Mode_"$mode
       fi 
       
-      $submitCMD -D $workdir -J $(whoami)_MTFAnalysis_$identifier""_TOF0_Centrality_$lowCent""_$highCent -o $dir/$logname.out -e $dir/$logname""_error.out $workdir/$PIDscript $dir/$fileName 0 0 0 $lowCent $highCent 1 $mode $lowJetPt $highJetPt
+      $submitCMD -D $workdir -J $(whoami)_MTFAnalysis_$identifier""_TOF0_Centrality_$lowCent""_$highCent -o $dir/$logname.out -e $dir/$logname""_error.out $workdir/$PIDscript $dir/$fileName 0 0 0 $lowCent $highCent $prePID $mode $lowJetPt $highJetPt
       sleep 30
     done
   done

@@ -75,12 +75,11 @@ def main():
             
             trainName = pidAnalysisInformation["trainName"]
             modTrainName = trainName.replace("/alice/cern.ch/user/a/alitrain/PWGJE/","").replace("/merge","").replace("/","_")
+            print(modTrainName)
             saveFileName = f"{trainFilesDir}/AnalysisResults_{modTrainName}.root"
             if modTrainName not in downloadedFiles:
                 downloadedFiles.add(modTrainName)
                 callScript(f"downloadTrainData.sh {trainName}/AnalysisResults.root {saveFileName}")
-
-            saveFileName = f"{trainFilesDir}/AnalysisResults.root"
                 
             dirToExtract = pidAnalysisInformation["dirFileName"]
             rootArguments = {
@@ -116,8 +115,12 @@ def main():
             if pidAnalysisInformation["isJet"]:
                 jetString = ";".join(config["jetPts"])
                 modeString = ";".join(config["modesJets"])
+
+            prePIDMode = "1"
+            if "prePIDMode" in pidAnalysisInformation:
+                prePIDMode = pidAnalysisInformation["prePIDMode"]
             
-            callScript(f"steerPIDAnalysis.sh {remoteHost} {remoteBasePath} {analysisDirName} {pidFileName} {jobIdentifier} {centStringWithUnderscore} {jetString} {modeString}")
+            callScript(f"steerPIDAnalysis.sh {remoteHost} {remoteBasePath} {analysisDirName} {pidFileName} {jobIdentifier} {centStringWithUnderscore} {jetString} {modeString} {prePIDMode}")
             
         exit()
         
@@ -125,7 +128,8 @@ def main():
         #### Download data ###
         ### Reference data
         print("Download data:")
-        downloadData(config["remoteHost"] + "://" + config["remoteBasePath"] + config["referenceRemotePath"], config["analysisFolder"] + 'Data')
+        for referencePath in config["referenceRemotePath"]:
+            downloadData(config["remoteHost"] + "://" + config["remoteBasePath"] + referencePath, config["analysisFolder"] + 'Data')
         
         ## Systematics
         for name,systematic in active_systematics.items():

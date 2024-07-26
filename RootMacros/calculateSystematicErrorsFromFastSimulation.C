@@ -360,6 +360,7 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
   
 	for (Int_t sysVariationMode=0;sysVariationMode<nSysVariations;++sysVariationMode) {
 		TFile f(sysVariationFiles[sysVariationMode],"READ");
+        cout << sysVariationFiles[sysVariationMode] << endl;
     // Load particle level spectra
 		for (Int_t sp=0; sp<nSpecies; sp++) {
 			gDirectory->cd(Form("Gen%s",strSpeciesNames[sp].Data()));
@@ -372,6 +373,10 @@ void createSystematicErrorsFromFiles(TString filePathDown, TString filePathUp, T
             continue;
           
           TString strTitle(Form("fh1FF%sGen%s_%02d_%02d",modeString[mode].Data(),strSpeciesNames[sp].Data(), jetPtLimits[2*i], jetPtLimits[2*i+1]));
+          cout << strTitle << endl;
+          if (!gDirectory->Get(strTitle)) {
+            exit(1);
+          }
           
           fh1SysVariationGenPrim[index(i, mode, sp) * nSysVariations + sysVariationMode] = (TH1F*) gDirectory->Get(strTitle);
           

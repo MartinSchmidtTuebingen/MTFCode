@@ -154,13 +154,27 @@ def runSystematicProcess(systematicsToProcess, systematics, config, jetString, s
     systematicsPropertiesToProcess = dict(filter(
         lambda systematic: systematic[0] in systematicsToProcess, systematics.items()))
 
+    if len(systematicsPropertiesToProcess) == 0:
+        print("WARNING: No Systematics to process for " + jetString)
+        return
+
     modeString = config['modesInclusiveString'] if jetString.find(
         'Inclusive') != -1 else config['modesJetsString']
 
     systematicInfoString = getSystematicInfoString(
         systematicsPropertiesToProcess, analysisFolder)
 
-    arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'referencepath': analysisFolder + '/Data', 'outfilepath': analysisFolder + foldersToCreate['single'], 'referenceFileSchema': config['fileNamePattern'],
+
+    referenceFileSchema = config['fileNamePattern']
+
+    for sysName, sysVariables in systematicsPropertiesToProcess.items():
+        try:
+            referenceFileSchema = sysVariables['referenceFileNamePattern']
+            break
+        except KeyError:
+            pass
+
+    arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'referencepath': analysisFolder + '/Data', 'outfilepath': analysisFolder + foldersToCreate['single'], 'referenceFileSchema': referenceFileSchema,
                  'stringForSystematicInformation': systematicInfoString, 'centStepsString': config['centString'], 'jetPtStepsString': config['jetPtString'], 'modesInputString': modeString, 'nSigma': config['nSigma']}
 
     callRootMacro("runSystematicErrorEstimation", arguments)
@@ -172,7 +186,7 @@ def runSystematicProcess(systematicsToProcess, systematics, config, jetString, s
 
     outPutFiles = "|".join(outputFilePatternList)
 
-    arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'date': systematicDay, 'referenceFile': analysisFolder + '/Data/' + config['fileNamePattern'], 'centStepsString': config['centString'],
+    arguments = {'jetString': jetString, 'chargeString': config['chargeString'], 'date': systematicDay, 'referenceFile': analysisFolder + '/Data/' + referenceFileSchema, 'centStepsString': config['centString'],
                  'jetPtStepsString': config['jetPtString'], 'modesInputString': modeString, 'outPutFilesToAddUp': outPutFiles, 'outPath': analysisFolder + foldersToCreate['summed'], 'nSigma': config['nSigma']}
 
     callRootMacro("runAddUpSystematicErrors", arguments)
@@ -200,7 +214,8 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
     isJetAnalysis = jetString.find(
         "Jets") != -1 and jetString.find("Inclusive") == -1
     obsValues = config['modesJets'] if isJetAnalysis else config['modesInclusive']
-    effFile = config['mcPath'] + config['efficiencyFileNamePattern'].format(jetString)
+    # For now, we do not use a specific ue efficiency file
+    effFile = config['mcPath'] + config['efficiencyFileNamePattern'].format(jetString.replace("_UE",""))
 
     # file name pattern for summed systematic errors
     fileNamePattern = "outputSystematicsTotal_SummedSystematicErrors_" + jetString + "_{0}___centrality{1}_{2}_{3}_" + \
@@ -218,6 +233,8 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
             upperJetPt = float(ptList[1]) if isJetAnalysis else -1
             jetPtString = jetPtStringPattern.format(lowJetPt, upperJetPt)
             for obs in obsValues:
+                if obs == "jT":
+                    obs = "Jt";
                 arguments = {
                     'effFile': effFile,
                     'pathNameData': config['analysisFolder'] + foldersToCreate['summed'] + fileNamePattern.format(obs, lowerCent, upperCent, jetPtString),
