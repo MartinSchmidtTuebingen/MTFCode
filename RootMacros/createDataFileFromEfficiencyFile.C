@@ -191,7 +191,7 @@ Int_t createDataFileFromEfficiencyFile(TString path, TString outPutPath, Double_
   cout << "Creating data particle yields" << endl;
   for (Int_t species=0;species<AliPID::kSPECIES;species++) {
     data->SetRangeUser(iMCid,species+1,species+1,kTRUE);
-    yields[species] = (TH1D*)data->Project(kStepRecWithRecCutsMeasuredObs, iObs);
+    yields[species] = (TH1D*)data->Project(kStepRecWithRecCutsMeasuredObs, iObsAxis);
     yields[species]->SetName(yieldNames[species].Data());
     yields[species]->SetTitle(AliPID::ParticleLatexName(species));
     yields[species]->SetLineColor(getLineColorAliPID(species));
@@ -210,7 +210,7 @@ Int_t createDataFileFromEfficiencyFile(TString path, TString outPutPath, Double_
   cout << "Creating generated particle yields" << endl;
   for (Int_t species=0;species<AliPID::kSPECIES;species++) {
     data->SetRangeUser(iMCid,species+1,species+1,kTRUE);
-    yieldsGen[species] = (TH1D*)data->Project(kStepGenWithGenCuts, iObs);
+    yieldsGen[species] = (TH1D*)data->Project(kStepGenWithGenCuts, iObsAxis);
     yieldsGen[species]->SetName(genYieldNames[species].Data());
     yieldsGen[species]->SetTitle(AliPID::ParticleLatexName(species));
     yieldsGen[species]->SetLineColor(getLineColorAliPID(species));
