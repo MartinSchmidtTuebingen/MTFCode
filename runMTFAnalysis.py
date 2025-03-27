@@ -22,7 +22,9 @@ def main():
     parser.add_argument('-p','--doPIDAnalysis', type=int, help='Upload data to farm and start analysis', required=False, default=0)
     parser.add_argument('-t','--tasks', type=str, help='Choose tasks to perform:Sys|Eff', required=False, default=defaultTasks) 
     parser.add_argument('-c','--continueRun', type=int, help='Continue after task to perform', required=False, default=0)
-    
+    parser.add_argument('-o','--output', type=str, help='Create output files from canvas', required=False, default='')
+    parser.add_argument('-m','--closure', type=str, help='MC closure test', required=False, default=0)
+
     args = parser.parse_args()
     
     analysisFolder = args.folder
@@ -32,6 +34,8 @@ def main():
     download = args.download != 0
     gridDownload = args.gridDownload != 0
     doPIDAnalysis = args.doPIDAnalysis != 0
+    canvas_name = args.output
+    mc_closure_test = args.closure != 0
     
     configFileName = analysisFolder + "config.json"
     
@@ -64,6 +68,10 @@ def main():
             config[mcPathName] = mcPath
         os.makedirs(mcPath, exist_ok = True)
         
+    if canvas_name != '':
+        create_pdf_files_from_canvas(config, canvas_name)
+        exit()
+
     if gridDownload:
         trainFilesDir = config["analysisFolder"] + "trainFiles"
         os.makedirs(trainFilesDir, exist_ok = True)
@@ -146,6 +154,10 @@ def main():
             
         # Now we have to exit because rsync does not work with ali environment. This is caught in the call script runAnalysis.sh by calling this python script again
         exit()
+
+    if mc_closure_test:
+        run_mc_closure_test(config)
+        exit()
       
     defaultTasksList = defaultTasks.split(',')
     tasksToPerform = args.tasks.lower().split(',')
@@ -182,8 +194,13 @@ def main():
     individualAnalyses = {
         "Inclusive":"Jets_Inclusive",
         "Jets":"Jets",
-        "UE":"Jets_UE"
+        #"UE":"Jets_UE"
     }
+
+    #### Subtract Underlying event ###
+    if 'ue' in tasksToPerform:
+        subtractUnderlyingEvent(config, systematicDay)
+
     for name,jetString in individualAnalyses.items():
         if config['do'+name] == 1:
             print('Do ' + name + ' analysis')
@@ -191,10 +208,6 @@ def main():
                 runSystematicProcess(config['systematics' + name], active_systematics, config, jetString, systematicDay)
             if 'eff' in tasksToPerform:
                 runCalculateEfficiency(jetString, config, systematicDay, systematicDay)
-                
-    #### Subtract Underlying event ###
-    if 'ue' in tasksToPerform:
-        subtractUnderlyingEvent(config, systematicDay)
         
         
         

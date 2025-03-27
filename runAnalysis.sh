@@ -32,23 +32,26 @@ shift;
 download=0
 gridDownload=0
 doPIDAnalysis=0
+doClosureTest=0
 day=$(date +%Y_%m_%d)
 tasks=""
 continueParameter=""
 helpParameter=""
+output=""
 
-while getopts "hdgps:t:c:" option; do
+while getopts "hdgpms:t:c:o:" option; do
   case $option in
     h) helpParameter="-h";;
     d) download=1;;
     g) gridDownload=1;;
     p) doPIDAnalysis=1;;
+    m) doClosureTest=1;;
     s) day=$OPTARG;;
     t) tasks="-t $OPTARG";;
-    c) continueParameter="-c $OPTARG"
+    c) continueParameter="-c $OPTARG";;
+    o) output="-o $OPTARG"
   esac
 done
-
 if [[ $gridDownload != "0" ]];then
   echo "Download grid data"
   source $folder/env.sh
@@ -75,5 +78,12 @@ else
   echo "Source base environment"
   source $folder/env.sh
 fi
+
+
+if [[ $doClosureTest != "0" ]];then
+  echo "Do MC Closure Test"
+  python3 $folder/runMTFAnalysis.py -f $analysisFolder -m 1
+  exit
+fi
   
-python3 $folder/runMTFAnalysis.py -f $analysisFolder -s $day $tasks $continueParameter $helpParameter
+python3 $folder/runMTFAnalysis.py -f $analysisFolder -s $day $tasks $continueParameter $helpParameter $output

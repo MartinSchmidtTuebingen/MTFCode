@@ -57,6 +57,9 @@ void SubtractUnderlyingEvent(TString jetFilePattern, TString ueFilePattern, TStr
           yieldNames[i] = yieldNames[i] + "_corrected";
       }
   }
+
+  TString yieldWeightedDifferenceNames[nOfYieldHistograms] = { "hYieldWeightedDifferenceElectrons", "hYieldWeightedDifferenceMuons", "hYieldWeightedDifferencePions", "hYieldWeightedDifferenceKaons", "hYieldWeightedDifferenceProtons"};
+
   TString yieldMCNames[nOfYieldHistograms] = { "hMCYield_e", "hMCYield_mu", "hMCYield_pi", "hMCYield_K", "hMCYield_p" };
   TString toPiMCNames[nOfYieldHistograms] = { "", "", "", "hMCToPi_K", "hMCToPi_p" };
   TString yieldNamessysError[nOfYieldHistograms] = { "hYieldElectrons_sysError_corrected", "hYieldMuons_sysError_corrected", "hYieldPions_sysError_corrected", "hYieldKaons_sysError_corrected", "hYieldProtons_sysError_corrected" };
@@ -74,6 +77,8 @@ void SubtractUnderlyingEvent(TString jetFilePattern, TString ueFilePattern, TStr
   //Yield Histograms
   TH1 *yieldHistogramsOriginal[nOfYieldHistograms] = {0x0};
   TH1 *yieldHistogramsOriginal_sysErrors[nOfYieldHistograms] = {0x0};
+
+  TH1 *yieldWeightedDifference[nOfYieldHistograms] = {0x0};
   
   TH1 *yieldHistogramsOriginalMC[nOfYieldHistograms] = {0x0};
   
@@ -135,6 +140,8 @@ void SubtractUnderlyingEvent(TString jetFilePattern, TString ueFilePattern, TStr
         TString inputName = Form(jetFilePattern, modeString[iMode].Data(), centralityString.Data(), jetPtString.Data());
         TString ueName = Form(ueFilePattern, modeString[iMode].Data(), centralityString.Data(), jetPtString.Data());
         TString outputName = Form(outputFilePattern, modeString[iMode].Data(), centralityString.Data(), jetPtString.Data());
+
+        cout << "Calculate " << outputName << endl;
     
         //Open file with complete yield
         TFile *all = new TFile(inputName,"READ");
@@ -226,6 +233,12 @@ void SubtractUnderlyingEvent(TString jetFilePattern, TString ueFilePattern, TStr
           yieldHistogramsUEsubtracted[k] = dynamic_cast<TH1*>(yieldHistogramsOriginal[k]->Clone(yieldNames[k]));
           if (!yieldHistogramsUEsubtracted[k])
             std::cout << "Could not clone " << yieldNames[k] << std::endl;
+
+          yieldWeightedDifference[k] = dynamic_cast<TH1*>(yieldHistogramsOriginal[k]->Clone(yieldNames[k]));
+          if (!yieldWeightedDifference[k])
+            std::cout << "Could not clone " << yieldWeightedDifferenceNames[k] << std::endl;
+
+          yieldWeightedDifference[k]->SetName(yieldWeightedDifferenceNames[k]);
         }
         
         cout << "subtract underlying event" << endl;
@@ -234,14 +247,22 @@ void SubtractUnderlyingEvent(TString jetFilePattern, TString ueFilePattern, TStr
           for (Int_t l=1;l<=yieldHistogramsUEsubtracted[k]->GetNbinsX();++l) {
             Double_t originalYield = yieldHistogramsOriginal[k]->GetBinContent(l);
             Double_t ueYield = yieldHistogramsUE[k]->GetBinContent(l);
-            if (originalYield >= 0.0 && ueYield >= 0.0)
-              yieldHistogramsUEsubtracted[k]->SetBinContent(l, originalYield - ueYield);
-            else if (originalYield >= 0.0)
+//             Double_t weightedDifference = (originalYield - ueYield)/originalYield;
+//             if (weightedDifference < 0) {
+//               cout << k << " " << l << endl;
+//             }
+            yieldWeightedDifference[k]->SetBinContent(l,(originalYield - ueYield)/originalYield);
+            Bool_t ueYieldPositive = kTRUE;
+            if (!ueYieldPositive && originalYield >= 0.0) {
               yieldHistogramsUEsubtracted[k]->SetBinContent(l, originalYield);
-            else if (ueYield >= 0.0)
-              yieldHistogramsUEsubtracted[k]->SetBinContent(l, -ueYield);
-            else
+            } else if (originalYield >= 0.0 && ueYield >= 0.0) {
+              yieldHistogramsUEsubtracted[k]->SetBinContent(l, originalYield - ueYield);
+            } else if (ueYield < 0.0) {
+              yieldHistogramsUEsubtracted[k]->SetBinContent(l, originalYield);
+              ueYieldPositive = kFALSE;
+            } else if (originalYield < 0.0) {
               yieldHistogramsUEsubtracted[k]->SetBinContent(l, 0.0);
+            }
           }
           if (yieldHistogramsOriginalMC[k] && yieldHistogramsUEMC[k]) {
             yieldHistogramsUEsubtractedMC[k] = (TH1*)(yieldHistogramsOriginalMC[k]->Clone(yieldMCNames[k]));
@@ -484,7 +505,6 @@ void SubtractUnderlyingEvent(TString jetFilePattern, TString ueFilePattern, TStr
         TCanvas* cYieldsWithTotalSystematicError_UEsubtracted = 0x0;     
          
           cout << "Construct canvases" << endl;
-          cout << systematicErrorUEsubtracted << endl << yieldHistogramFractions << endl;
 //           Total
 //           cFractionsWithTotalSystematicError_Total = DrawFractionHistos("cFractionsWithTotalSystematicError_Total", "Particle fraction", pLow,
 //                                                                             pHigh, systematicErrorUEsubtracted, yieldHistogramFractions, kFraction, iMode, kDrawElectrons);
@@ -682,6 +702,11 @@ void SubtractUnderlyingEvent(TString jetFilePattern, TString ueFilePattern, TStr
 //           
 //           if (ratioToPiHistogramsUEsubtractedMC[k])
 //             ratioToPiHistogramsUEsubtractedMC[k]->Write();
+        }
+
+        cout << "Write difference histograms" << endl;
+        for (Int_t k=0;k<nOfYieldHistograms;++k) {
+          yieldWeightedDifference[k]->Write();
         }
         
         cout << "Write total yield histograms" << endl;

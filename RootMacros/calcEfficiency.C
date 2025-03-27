@@ -18,8 +18,7 @@
 #include "THnSparseDefinitions.h"
 
 enum type { kTrackPt = 0, kZ = 1, kXi = 2, kR = 3, kjT = 4, kNtypes};
-enum typeMCSysErrors { kNoErrors = 0, kErrorsWithoutMultDep = 1, kErrorsIncludingMultDep = 2, kErrorsOnlyMultDep = 3, kErrorsForMerging = 4,
-                       kErrorsForMergingOnlyMultDep = 5, kErrorsForMergingWithoutMultDep = 6, kNMCSysErrorTypes };
+enum typeMCSysErrors { kNoErrors = 0, kErrorsWithoutMultDep = 1, kErrorsIncludingMultDep = 2, kErrorsOnlyMultDep = 3, kErrorsForMerging = 4, kErrorsForMergingOnlyMultDep = 5, kErrorsForMergingWithoutMultDep = 6, kNMCSysErrorTypes };
 
 const Int_t numParamsMult = 3;
 
@@ -2165,7 +2164,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       }
     }
     else {
-      printf("Could not open UE MC file %s",pathMCUEFile.Data());
+      printf("Could not open UE MC file %s\n",pathMCUEFile.Data());
     }
   }
   else {
@@ -2380,7 +2379,6 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
 
   TString pathNameDataMC = pathNameEfficiency;
   pathNameDataMC.ReplaceAll("_efficiency", "");
-  
   TFile* fDataMC = TFile::Open(pathNameDataMC.Data());
   if (!fDataMC && restrictJetPtAxis)  {
     std::cout << std::endl;
@@ -2394,15 +2392,20 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
 
   TObjArray* histList = (TObjArray*)(fDataMC->Get(listName.Data()));
   if (!histList)
-    histList = (TObjArray*)(fDataMC->Get("PWGJE_taskMTFPID")); // Falllback for inconsistent data
+    histList = (TObjArray*)(fDataMC->Get("PWGJE_taskMTFPID_Jets_Inclusive")); // Falllback for inconsistent data
 
   if (!histList && restrictJetPtAxis) {
     std::cout << std::endl;
     std::cout << "Failed to load list \"" << listName.Data() << "\" to obtain num of rec/gen jets!" << std::endl;
     return -1;
   }  
-  
-  TH1* fhEventsProcessedMC = (TH1*)histList->FindObject("fhEventsProcessed");
+
+  TH1* fhEventsProcessedMC = 0x0;
+  if (!histList) {
+    fhEventsProcessedMC = (TH1*)fDataMC->FindObject("fhEventsProcessed");
+  } else {
+    fhEventsProcessedMC = (TH1*)histList->FindObject("fhEventsProcessed");
+  }
 
   if (restrictJetPtAxis) {
     
@@ -2479,10 +2482,6 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TString saveFilePathName = Form("%s/%s", pathSaveData.Data(), saveFileName.Data());
   TFile* saveFile = TFile::Open(saveFilePathName.Data(), "RECREATE");
   
-  
-  
-  
-  
   // Correction of muon contamination
   TH1D* hPiFracInMuPi = 0x0;
   TH1D* hPiFracInMuPiStrangeScale = 0x0;
@@ -2503,7 +2502,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   // For testing with data set w/o strangeness secStrangeScale->CalculateEfficiency(kStepRecWithRecCutsMeasuredObsPrimaries, kStepRecWithRecCutsMeasuredObs);
   secStrangeScale->CalculateEfficiency(kStepRecWithRecCutsMeasuredObsPrimaries, kStepRecWithRecCutsMeasuredObsStrangenessScaled);
   sec->CalculateEfficiency(kStepRecWithRecCutsMeasuredObsPrimaries, kStepRecWithRecCutsMeasuredObs);
-  
+
   // QA plots for secondaries
   TCanvas* cSec = createCanvasForCorrFactor("cSec", "Secondary Contamination");
   cSec->Divide(2, 1);
@@ -3635,11 +3634,8 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     hMCcorrTotal[species] = new TH1D(*hEfficiency[species]);
     hMCcorrTotal[species]->SetName(Form("hMCcorrTotal_%s", AliPID::ParticleShortName(species)));
     
-    if (species == AliPID::kProton)
-    
     // Sec
     multiplyHistsDifferentBinning(hMCcorrTotal[species], scaleStrangeness ? hSecSS[species] : hSec[species], 1., 1.);
-    if (species == AliPID::kProton)
     
     // Mu corr
     if (applyMuonCorrection && species == AliPID::kPion)

@@ -16,7 +16,8 @@ foldersToCreate = {
     'single': 'SingleSystematicResults/',
     'summed': 'SummedSystematics/',
     'eff': 'Efficiencycorrected/',
-    'uesub': 'UEsubtractedJetResults/'
+    'uesub': 'UEsubtractedJetResults/',
+    'pic': 'Pictures/'
 }
 
 
@@ -210,6 +211,93 @@ def getSystematicInfoString(systematics, analysisFolder):
     return sysInfoString
 
 
+def run_mc_closure_test(config):
+    individualAnalyses = {
+        #"Inclusive":"Jets_Inclusive_PureGauss",
+        "Jets":"Jets",
+    }
+
+    for name,jetString in individualAnalyses.items():
+        if config['do'+name] == 1:
+            isJetAnalysis = jetString.find(
+                "Jets") != -1 and jetString.find("Inclusive") == -1
+            obsValues = config['modesJets'] if isJetAnalysis else config['modesInclusive']
+            # For now, we do not use a specific ue efficiency file
+            closureTestFile = config["mcPath"] + config["closureTestFile"]
+            closure_path = str(Path(closureTestFile).parent)
+            closure_output_file_pattern = 'yieldsFromMC_{0}___centrality{1}_{2}_{3}efficiencyCorrected.root'
+
+            jetPtStringPattern = "jetPt{0}_{1}_" if isJetAnalysis else ""
+            effFile = config['mcPath'] + config['efficiencyFileNamePattern'].format(jetString.replace("_UE",""))
+
+            for cent in config['centralities']:
+                centList = cent.split("_")
+                lowerCent = int(centList[0])
+                upperCent = int(centList[1])
+
+                for jetPt in config['jetPts']:
+                    ptList = jetPt.split("_")
+                    lowJetPt = float(ptList[0]) if isJetAnalysis else -1
+                    upperJetPt = float(ptList[1]) if isJetAnalysis else -1
+                    jetPtString = jetPtStringPattern.format(lowJetPt, upperJetPt)
+                    for obs in obsValues:
+                        if obs == "jT":
+                            obs = "Jt"
+
+                        output_file = closure_output_file_pattern.format(obs, lowerCent, upperCent, jetPtString)
+
+                        arguments = {
+                            'path': closureTestFile,
+                            'outPutPath': closure_path + '/' + output_file,
+                            'lowerJetPt': lowJetPt,
+                            'upperJetPt': upperJetPt,
+                            'lowerCent': lowerCent,
+                            'upperCent': upperCent,
+                            'iObs': obsNameToNumber[obs.lower()],
+                            'applyMuonCorrection': config['applyMuonCorrection'],
+                        }
+                        callRootMacro('createDataFileFromEfficiencyFile', arguments)
+
+                        arguments = {
+                            'effFile': effFile,
+                            'pathNameData': closure_path + '/' + output_file,
+                            'pathMCsysErrors': '',
+                            'savePath': closure_path,
+                            'correctGeantFluka': "kFALSE",
+                            'newGeantFluka': "kFALSE",
+                            'scaleStrangeness': "kFALSE",
+                            'applyMuonCorrection': config['applyMuonCorrection'],
+                            'chargeMode': config['charge'],
+                            'lowerCentData': lowerCent,
+                            'upperCentData': upperCent,
+                            'lowerCent': lowerCent,
+                            'upperCent': upperCent,
+                            'lowerJetPt': lowJetPt,
+                            'upperJetPt': upperJetPt,
+                            'iObs': obsNameToNumber[obs.lower()],
+                            'constCorrAboveThreshold': config['constCorrAboveThreshold'],
+                            'rebinEffObs': config['rebinEffObs'],
+                            'etaAbsCut': config['etaAbsCut'],
+                            'eps_trigger': config['eps_trigger'],
+                            'sysErrTypeMC': 0,
+                            #'sysErrTypeMC': config['sysErrTypeMC'],
+                            'normaliseToNInel': 'kFALSE' if isJetAnalysis else 'kTRUE',
+                            'pathMCUEFile': ''
+                        }
+
+                        callRootMacro('calcEfficiency', arguments)
+
+                        arguments = {
+                            'genYieldsFile': closure_path + '/' + output_file,
+                            'correctedDataFile': closure_path + '/output_EfficiencyCorrection_' + output_file
+                        }
+
+                        callRootMacro('createMCClosureCheckCanvas', arguments)
+
+                    if not isJetAnalysis:
+                        break
+
+
 def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
     isJetAnalysis = jetString.find(
         "Jets") != -1 and jetString.find("Inclusive") == -1
@@ -218,8 +306,9 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
     effFile = config['mcPath'] + config['efficiencyFileNamePattern'].format(jetString.replace("_UE",""))
 
     # file name pattern for summed systematic errors
-    fileNamePattern = "outputSystematicsTotal_SummedSystematicErrors_" + jetString + "_{0}___centrality{1}_{2}_{3}_" + \
-        systematicDay + "__" + summedDay + ".root"
+    #fileNamePattern = "outputSystematicsTotal_SummedSystematicErrors_" + jetString + "_{0}___centrality{1}_{2}_{3}_" + \
+     #   systematicDay + "__" + summedDay + ".root"
+    fileNamePattern = "outputSystematicsTotal_SummedSystematicErrors_Jets_{0}___centrality{1}_{2}_{3}UEsubtractedJetResults.root"
     jetPtStringPattern = "jetPt{0}_{1}_" if isJetAnalysis else ""
 
     for cent in config['centralities']:
@@ -237,7 +326,8 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
                     obs = "Jt";
                 arguments = {
                     'effFile': effFile,
-                    'pathNameData': config['analysisFolder'] + foldersToCreate['summed'] + fileNamePattern.format(obs, lowerCent, upperCent, jetPtString),
+                    #'pathNameData': config['analysisFolder'] + foldersToCreate['summed'] + fileNamePattern.format(obs, lowerCent, upperCent, jetPtString),
+                    'pathNameData': config['analysisFolder'] + foldersToCreate['uesub'] + fileNamePattern.format(obs, lowerCent, upperCent, jetPtString),
                     'pathMCsysErrors': config['pathMCsysErrors'],
                     'savePath': config['analysisFolder'] + foldersToCreate['eff'],
                     'correctGeantFluka': config['correctGeantFluka'],
@@ -269,16 +359,42 @@ def runCalculateEfficiency(jetString, config, systematicDay, summedDay):
 
 def subtractUnderlyingEvent(config, systematicDay):
     arguments = {
-        'jetFilePattern': config['analysisFolder'] + foldersToCreate['eff'] + "output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_%s__%s%s__" + systematicDay + "__" + systematicDay + ".root",
-        'ueFilePattern': config['analysisFolder'] + foldersToCreate['eff'] + "output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_UE_%s__%s%s__" + systematicDay + "__" + systematicDay + ".root",
+        'jetFilePattern': config['analysisFolder'] + foldersToCreate['summed'] + "outputSystematicsTotal_SummedSystematicErrors_Jets_%s__%s%s.root",
+        'ueFilePattern': config['analysisFolder'] + foldersToCreate['summed'] + "outputSystematicsTotal_SummedSystematicErrors_Jets_UE_%s__%s%s.root",
         'jetPtStepsString': config['jetPtString'],
         'centStepsString': config['centString'],
         'modesInputString': config['modesJetsString'],
-        'outputFilePattern': config['analysisFolder'] + foldersToCreate['uesub'] + "output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_%s__%s%s__" + systematicDay + "__" + systematicDay + "_UEsubtractedJetResults.root",
+        'outputFilePattern': config['analysisFolder'] + foldersToCreate['uesub'] + "outputSystematicsTotal_SummedSystematicErrors_Jets_%s__%s%s_UEsubtractedJetResults.root",
     }
 
-    callRootMacro("SubtractUnderlyingEvent", arguments)
+    callRootMacro("SubtractUnderlyingEvent_V2", arguments)
 
+def create_pdf_files_from_canvas(config, canvas_name):
+    obsValues = config['modesJets']
+
+    for cent in config['centralities']:
+        centList = cent.split("_")
+        lowerCent = int(centList[0])
+        upperCent = int(centList[1])
+
+        for jetPt in config['jetPts']:
+            ptList = jetPt.split("_")
+            lowJetPt = float(ptList[0])
+            upperJetPt = float(ptList[1])
+            for obs in obsValues:
+                if obs == "jT":
+                    obs = "Jt";
+                file_name = config['analysisFolder'] + foldersToCreate['uesub'] + f"""output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_{obs}___centrality{lowerCent}_{upperCent}_jetPt{lowJetPt}_{upperJetPt}_UEsubtractedJetResults.root"""
+
+                save_name = config['analysisFolder'] + foldersToCreate['uesub'] + f"""output_EfficiencyCorrection_outputSystematicsTotal_SummedSystematicErrors_Jets_{obs}___centrality{lowerCent}_{upperCent}_jetPt{lowJetPt}_{upperJetPt}_UEsubtractedJetResults.root"""
+
+                arguments = {
+                    'filename': file_name,
+                    'savename': config['analysisFolder'] + foldersToCreate['pic'] + f"""Fractions_UEsubtracted_{obs}_Cent_{lowerCent}_{upperCent}_jetPt_{lowJetPt}_{upperJetPt}.pdf""",
+                    'canvasName': canvas_name,
+                }
+
+                callRootMacro("GetAndSaveCanvas", arguments)
 
 def fitFastSimulationFactors(config, fastSimulationConfig):
     #### Produce fast simulation parameters. Runs in a loop until fit looks good. ###
